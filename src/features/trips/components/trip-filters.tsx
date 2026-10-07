@@ -1,5 +1,6 @@
 import Link from "next/link";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getTripFiltersHref } from "../lib/trip-filters";
 import type { TripFilters as TripFiltersValue } from "../model/trip";
 import { cn } from "@/lib/utils";
@@ -27,14 +28,14 @@ export function TripFilters({ filters }: TripeFiltersProps) {
         method="get"
         role="search"
         aria-label="Buscar Viagens"
-        className="flex flex-col gap-3 sm:flex-rom sm:items-end"
+        className="flex flex-col gap-3 sm:flex-row sm:items-end"
       >
         <div className="flex-1 space-y-2">
           <label htmlFor="trip-search" className="text-sm font-medium">
             Buscar Viagem
           </label>
 
-          <input
+          <Input
             id="trip-search"
             type="search"
             name="q"
@@ -44,7 +45,7 @@ export function TripFilters({ filters }: TripeFiltersProps) {
         </div>
 
         <input type="hidden" name="status" value={filters.status} />
-        <button type="submit">Buscar</button>
+        <Button type="submit">Buscar</Button>
       </form>
 
       <nav
