@@ -65,4 +65,6 @@ GraphQL aceita POST JSON, recusa origens diferentes, exige autenticação e limi
 
 ## Situação da entrega
 
-Código e migração preparados para configuração. Testes de navegador usam serviços simulados; testes de banco executam a migração em PostgreSQL em memória. O projeto Supabase remoto, SMTP e deploy dependem da configuração da conta de Gabriel.
+Projeto Supabase remoto conectado. Gabriel executou a migração e validou manualmente cadastro, persistência, convites, votação e restrições de acesso. O registro distingue as verificações automáticas dos resultados relatados em [validacao-mvp.md](validacao-mvp.md).
+
+Os testes Playwright continuam usando serviços simulados, e os testes SQL executam a migração em PostgreSQL em memória. SMTP foi adiado por decisão de Gabriel; publicação e os demais itens de homologação ainda estão pendentes.

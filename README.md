@@ -20,17 +20,19 @@ Preencha o ambiente conforme as etapas abaixo. Sem configuração, a aplicação
 
 ## Preparar o Supabase
 
-1. Crie um projeto no Supabase e guarde a senha do banco em local seguro.
+1. Crie um projeto no Supabase e guarde a senha do banco em local seguro. Mantenha **Enable Data API** e **Enable automatic RLS** ativos; desative **Automatically expose new tables**, pois a migração concede as permissões explicitamente.
 2. No SQL Editor, execute o conteúdo de `supabase/migrations/202610260001_mvp.sql` **uma vez, em um projeto novo**. A migração cria as tabelas, funções, triggers e políticas RLS.
 3. Copie a URL do projeto e a chave **publishable** (ou a antiga chave anon) para `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-4. Em Authentication, mantenha o provedor Email habilitado e a confirmação de e-mail ativa. Configure senha mínima de 8 caracteres.
-5. Em URL Configuration, use `http://localhost:3000` como Site URL e permita `http://localhost:3000/auth/callback` nas Redirect URLs.
+4. Em **Authentication → Sign In / Providers → Email**, mantenha o provedor Email habilitado e configure **Minimum password length** como 8. Mantenha também **Confirm email** ativo na página de provedores.
+5. Em **Authentication → URL Configuration**, use `http://localhost:3000` como Site URL e permita `http://localhost:3000/**` nas Redirect URLs para desenvolvimento local.
 6. Configure SMTP para enviar confirmações e recuperação de senha aos usuários reais. Verifique os limites de envio do seu provedor.
 7. Reinicie o servidor, crie uma conta e confirme o e-mail no mesmo navegador usado no cadastro.
 
 Não use chave secret/service_role no navegador ou neste app. A API usa a sessão do usuário, e as políticas do banco decidem o acesso. Não comite `.env.local`.
+
+Se o ambiente já estiver configurado, preserve o arquivo `.env.local` existente. O projeto remoto foi conectado e os testes manuais realizados estão registrados em [docs/validacao-mvp.md](docs/validacao-mvp.md). SMTP e publicação continuam pendentes.
 
 Alternativa com Supabase CLI: após instalar e autenticar a CLI, use `supabase link --project-ref SEU_PROJECT_REF` e `supabase db push` no projeto novo. Use somente uma forma de aplicar a migração. A configuração local está em `supabase/config.toml`; `supabase start` exige Docker.
 
