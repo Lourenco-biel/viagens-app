@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Viagens
 
-## Getting Started
+Planejamento de viagens individuais e em grupo. MVP com contas, viagens persistidas, convites, roteiro e votação.
 
-First, run the development server:
+## Stack
+
+Next.js App Router e TypeScript; Tailwind e shadcn/ui (Base UI); GraphQL Yoga no servidor; Apollo Client no navegador; Supabase Auth e PostgreSQL; Zod; Jest, Playwright e Storybook.
+
+## Rodar no WSL
+
+Node.js 24 e npm. Execute na pasta do projeto:
 
 ```bash
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Preencha o ambiente conforme as etapas abaixo. Sem configuração, a aplicação mostra uma tela de indisponibilidade; os mocks são exclusivos de testes e Storybook.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Preparar o Supabase
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Crie um projeto no Supabase e guarde a senha do banco em local seguro.
+2. No SQL Editor, execute o conteúdo de `supabase/migrations/202610260001_mvp.sql` **uma vez, em um projeto novo**. A migração cria as tabelas, funções, triggers e políticas RLS.
+3. Copie a URL do projeto e a chave **publishable** (ou a antiga chave anon) para `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+4. Em Authentication, mantenha o provedor Email habilitado e a confirmação de e-mail ativa. Configure senha mínima de 8 caracteres.
+5. Em URL Configuration, use `http://localhost:3000` como Site URL e permita `http://localhost:3000/auth/callback` nas Redirect URLs.
+6. Configure SMTP para enviar confirmações e recuperação de senha aos usuários reais. Verifique os limites de envio do seu provedor.
+7. Reinicie o servidor, crie uma conta e confirme o e-mail no mesmo navegador usado no cadastro.
 
-## Learn More
+Não use chave secret/service_role no navegador ou neste app. A API usa a sessão do usuário, e as políticas do banco decidem o acesso. Não comite `.env.local`.
 
-To learn more about Next.js, take a look at the following resources:
+Alternativa com Supabase CLI: após instalar e autenticar a CLI, use `supabase link --project-ref SEU_PROJECT_REF` e `supabase db push` no projeto novo. Use somente uma forma de aplicar a migração. A configuração local está em `supabase/config.toml`; `supabase start` exige Docker.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Validação
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+npm run typecheck
+npm test -- --runInBand
+npm run test:db
+npx playwright install --with-deps chromium
+npm run test:e2e
+npm run build
+npm run build-storybook
+```
 
-## Deploy on Vercel
+- Jest: regras de datas, busca, validação e contrato dos documentos GraphQL.
+- Banco: PostgreSQL real em memória via PGlite, com a migração e papéis autenticados, sem projeto remoto.
+- Playwright: fluxos desktop e celular, com servidor de autenticação de teste e respostas GraphQL simuladas. Também verifica proteção real da rota GraphQL contra consultas anônimas e origens externas.
+- Esses testes não substituem a homologação do Supabase remoto: cookies, envio de e-mail, PostgREST e persistência precisam ser conferidos com o projeto configurado.
+- Playwright usa portas 3100 e 54329, com saída em `.next-e2e`. Não precisa alterar seu ambiente real.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Storybook
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run storybook
+```
+
+Abra `http://localhost:6006`. Há histórias para cards, estados vazios, criação de viagem, sugestões e acesso.
+
+## Publicação
+
+1. Configure e homologue o Supabase antes de publicar.
+2. Suba o repositório para o GitHub e importe o projeto na Vercel, ou use outro host compatível com Next.js no servidor. Não use exportação HTML estática.
+3. Configure as duas variáveis de ambiente **antes do build**, inclusive em produção.
+4. Use Node.js 24 e os comandos `npm run build` / `npm run start`.
+5. No Supabase, altere o Site URL para o domínio HTTPS e adicione `https://SEU_DOMINIO/auth/callback` às Redirect URLs.
+6. Refaça o build se mudar variáveis `NEXT_PUBLIC_*`.
+7. Teste o checklist de homologação em [docs/mvp.md](docs/mvp.md).
+
+O projeto não foi publicado e não contém credenciais de produção.
+
+## Organização
+
+```text
+src/app/                     rotas, layouts e endpoint GraphQL
+src/features/auth/           sessão, formulários e proteção de páginas
+src/features/trips/
+  components/                interface e integração com Apollo
+  graphql/                   operações tipadas
+  hooks/                     estado do formulário
+  lib/                       funções de domínio
+  model/                     tipos e schemas Zod
+  server/                    serviços e persistência
+src/lib/graphql/             schema, contexto, provider e erros
+src/lib/supabase/            clientes SSR/browser e tipos do banco
+src/components/ui/          componentes shadcn
+supabase/migrations/        estrutura e permissões do banco
+tests/                      testes SQL
+e2e/                        testes de navegador e serviços simulados
+```
+
+Regras e limites do MVP: [docs/mvp.md](docs/mvp.md).
