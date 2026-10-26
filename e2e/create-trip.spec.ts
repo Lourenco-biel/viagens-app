@@ -1,60 +1,37 @@
-import { expect, test } from "@playwright/test";
+import { test, expect, mockApi, tripId } from "./support/fixtures";
 
-test("permite corrigir o período e revisar os dados da viagem", async ({
-  page,
-}) => {
+test("valida, revisa, salva e reabre a viagem", async ({ page }) => {
+  await mockApi(page, []);
   await page.goto("/viagens");
-
-  await page
-    .getByRole("link", { name: "Nova viagem", exact: true })
-    .click();
-
-  await expect(page).toHaveURL(/\/viagens\/nova$/);
-
-  const form = page.getByRole("form", {
-    name: "Nova viagem",
-    exact: true,
-  });
-
-  const endDate = form.getByLabel("Data de término", { exact: true });
-  const reviewButton = form.getByRole("button", {
-    name: "Revisar viagem",
-    exact: true,
-  });
-
-  const summary = page.getByRole("region", {
-    name: "Resumo da viagem para revisão",
-    exact: true,
-  });
-
+  await page.getByRole("link", { name: "Nova viagem", exact: true }).click();
+  const form = page.getByRole("form", { name: "Nova viagem", exact: true });
   await form.getByLabel("Nome da viagem").fill("Passeio em família");
   await form.getByLabel("Destino", { exact: true }).fill("Curitiba, PR");
   await form.getByLabel("Data de início").fill("2026-12-10");
-  await endDate.fill("2026-12-09");
-
-  await reviewButton.click();
-
+  await form.getByLabel("Data de término").fill("2026-12-09");
+  await form.getByRole("button", { name: "Revisar viagem" }).click();
   await expect(form.getByRole("alert")).toHaveText(
     "A data de término deve ser igual ou posterior ao início.",
   );
-  await expect(endDate).toHaveAttribute("aria-invalid", "true");
-  await expect(summary).toHaveCount(0);
-
-  await endDate.fill("2026-12-12");
-  await reviewButton.click();
-
-  await expect(form.getByRole("alert")).toHaveCount(0);
-  await expect(endDate).toHaveAttribute("aria-invalid", "false");
-  await expect(summary).toBeVisible();
-
+  await form.getByLabel("Data de término").fill("2026-12-12");
+  await form.getByRole("button", { name: "Revisar viagem" }).click();
+  await page.getByRole("button", { name: "Salvar viagem", exact: true }).click();
+  await expect(page).toHaveURL("/viagens/" + tripId);
   await expect(
-    summary.getByRole("heading", {
-      name: "Passeio em família",
-      exact: true,
-    }),
+    page.getByRole("heading", { name: "Passeio em família", exact: true }),
   ).toBeVisible();
-
+  await page.reload();
   await expect(
-    summary.getByText("Curitiba, PR", { exact: true }),
+    page.getByRole("heading", { name: "Passeio em família", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Editar viagem" }).click();
+  await page.getByLabel("Nome da viagem").fill("Viagem atualizada");
+  await page.getByRole("button", { name: "Revisar viagem" }).click();
+  await page.getByRole("button", { name: "Salvar viagem" }).click();
+  await expect(page.getByRole("heading", { name: "Viagem atualizada", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Excluir viagem" }).click();
+  await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Suas próximas histórias começam aqui" }),
   ).toBeVisible();
 });
