@@ -2,7 +2,7 @@ import type { TripSummary } from "../model/trip";
 import { TripCard } from "./trip-card";
 
 type TripListProps = Readonly<{
-  trips: TripSummary[];
+  trips: readonly TripSummary[];
 }>;
 
 export function TripList({ trips }: TripListProps) {

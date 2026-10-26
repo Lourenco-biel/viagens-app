@@ -35,7 +35,7 @@ describe("createTripSchema", () => {
       expect.arrayContaining([
         expect.objectContaining({
           path: ["endDate"],
-          message: "A data de término deve ser igual ou posterior ao inicio.",
+          message: "A data de término deve ser igual ou posterior ao início.",
         }),
       ]),
     );

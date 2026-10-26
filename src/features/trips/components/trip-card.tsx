@@ -16,7 +16,7 @@ type TripCardProps = Readonly<{
 const statusLabels: Record<TripStatus, string> = {
   upcoming: "Próxima",
   ongoing: "Em andamento",
-  completed: "Concluído",
+  completed: "Concluída",
 };
 
 export function TripCard({ trip }: TripCardProps) {
@@ -26,16 +26,16 @@ export function TripCard({ trip }: TripCardProps) {
     <article aria-labelledby={titleId} className="h-full">
       <Card className="h-full">
         <CardHeader className="gap-3">
-          <span className="w-fit rouded-full bg-muted px-3 py-1 text-xs front-medium">
+          <span className="w-fit rounded-full bg-muted px-3 py-1 text-xs font-medium">
             {statusLabels[trip.status]}
           </span>
 
-          <h2 id={titleId} className="text-lg fonrt-semibold">
+          <h2 id={titleId} className="text-lg font-semibold">
             {trip.name}
           </h2>
 
           <p className="flex items-center gap-2 text-muted-foreground">
-            <MapPin arial-hidden="true" className="size-4 shrink-0" />
+            <MapPin aria-hidden="true" className="size-4 shrink-0" />
             <span>{trip.destination}</span>
           </p>
         </CardHeader>
@@ -47,7 +47,7 @@ export function TripCard({ trip }: TripCardProps) {
               className="mt-0.5 size-4 shrink-0 text-muted-foreground"
             />
             <div>
-              <p className="mb-1 text-xs text-foreground">Periodo da viagem</p>
+              <p className="mb-1 text-xs text-muted-foreground">Período da viagem</p>
               <p>
                 <time dateTime={trip.startDate}>
                   {formatTripDate(trip.startDate)}
