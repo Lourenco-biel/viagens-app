@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Formulário de nova viagem com validação dos campos e revisão dos dados. Nesta etapa, a viagem ainda não é salva.",
+          "Formulário com validação, revisão e callback de salvamento. A integração real com GraphQL fica no componente NewTrip/EditTrip.",
       },
     },
   },
@@ -31,4 +31,23 @@ type Story = StoryObj<typeof meta>;
 
 export const Inicial: Story = {
   name: "Formulário de nova viagem",
+};
+
+export const Edicao: Story = {
+  args: {
+    initialValues: {
+      name: "Férias em Curitiba",
+      destination: "Curitiba, PR",
+      startDate: "2026-12-10",
+      endDate: "2026-12-12",
+    },
+  },
+};
+
+export const FalhaAoSalvar: Story = {
+  args: {
+    onSaveAction: async () => {
+      throw new Error("offline");
+    },
+  },
 };

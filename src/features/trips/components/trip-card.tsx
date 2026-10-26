@@ -1,13 +1,9 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 import { formatTripDate } from "../lib/format-trip-date";
 import type { TripSummary, TripStatus } from "../model/trip";
 import { CalendarDays, MapPin, UserRound } from "lucide-react";
+import Link from "next/link";
 
 type TripCardProps = Readonly<{
   trip: TripSummary;
@@ -31,7 +27,12 @@ export function TripCard({ trip }: TripCardProps) {
           </span>
 
           <h2 id={titleId} className="text-lg font-semibold">
-            {trip.name}
+            <Link
+              href={"/viagens/" + trip.id}
+              className="rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              {trip.name}
+            </Link>
           </h2>
 
           <p className="flex items-center gap-2 text-muted-foreground">
@@ -49,13 +50,9 @@ export function TripCard({ trip }: TripCardProps) {
             <div>
               <p className="mb-1 text-xs text-muted-foreground">Período da viagem</p>
               <p>
-                <time dateTime={trip.startDate}>
-                  {formatTripDate(trip.startDate)}
-                </time>
+                <time dateTime={trip.startDate}>{formatTripDate(trip.startDate)}</time>
                 {" - "}
-                <time dateTime={trip.endDate}>
-                  {formatTripDate(trip.endDate)}
-                </time>
+                <time dateTime={trip.endDate}>{formatTripDate(trip.endDate)}</time>
               </p>
             </div>
           </div>
@@ -63,8 +60,7 @@ export function TripCard({ trip }: TripCardProps) {
         <CardFooter className="mt-auto gap-2 border-t text-muted-foreground">
           <UserRound aria-hidden="true" className="size-4 shrink-0" />
           <span>
-            {trip.participantCount}{" "}
-            {trip.participantCount === 1 ? "participante" : "participantes"}
+            {trip.participantCount} {trip.participantCount === 1 ? "participante" : "participantes"}
           </span>
         </CardFooter>
       </Card>

@@ -5,7 +5,7 @@ import { getTripFiltersHref } from "../lib/trip-filters";
 import type { TripFilters as TripFiltersValue } from "../model/trip";
 import { cn } from "@/lib/utils";
 
-type TripeFiltersProps = Readonly<{
+type TripFiltersProps = Readonly<{
   filters: TripFiltersValue;
 }>;
 
@@ -19,7 +19,7 @@ const statusOptions = [
   label: string;
 }>;
 
-export function TripFilters({ filters }: TripeFiltersProps) {
+export function TripFilters({ filters }: TripFiltersProps) {
   return (
     <div className="space-y-4">
       <form
@@ -39,6 +39,7 @@ export function TripFilters({ filters }: TripeFiltersProps) {
             id="trip-search"
             type="search"
             name="q"
+            maxLength={120}
             defaultValue={filters.query}
             placeholder="Nome da viagem ou destino"
           />
@@ -48,10 +49,7 @@ export function TripFilters({ filters }: TripeFiltersProps) {
         <Button type="submit">Buscar</Button>
       </form>
 
-      <nav
-        aria-label="Filtar viagens por status"
-        className="flex flex-wrap gap-2"
-      >
+      <nav aria-label="Filtrar viagens por status" className="flex flex-wrap gap-2">
         {statusOptions.map((option) => {
           const isActive = filters.status === option.value;
 
