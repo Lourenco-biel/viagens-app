@@ -23,10 +23,10 @@ As regras atuais estão em [MVP](../mvp.md), e os resultados dos testes em [Vali
 
 ## Índice
 
-As propostas abaixo aguardam validação antes de ampliar o comportamento do MVP.
+O status de cada spec indica se a proposta está em discussão, pronta para desenvolvimento ou já foi implementada.
 
 | Spec | Objetivo | Status |
 | --- | --- | --- |
-| [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Rascunho |
+| [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Pronta |
 
 IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP. Sua menção no histórico não representa compromisso de implementação.

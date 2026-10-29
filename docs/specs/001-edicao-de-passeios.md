@@ -1,22 +1,22 @@
 # 001 — Edição de passeios
 
-- Status: Rascunho — aguardando validação de Gabriel
+- Status: Pronta — aprovada por Gabriel em 2026-10-29
 - Criada em: 2026-10-29
 - Atualizada em: 2026-10-29
 - Responsável pela validação: Gabriel
 - Implementação: não iniciada
 
-## Resumo para validação
+## Resumo aprovado
 
-Permitir corrigir um passeio no próprio roteiro, sem excluí-lo. Esta spec propõe três decisões de produto que ainda precisam de aprovação:
+Permitir corrigir um passeio no próprio roteiro, sem excluí-lo. Gabriel aprovou esta spec em 29 de outubro de 2026, incluindo as decisões abaixo:
 
-| Decisão | Proposta | Consequência |
+| Decisão | Regra aprovada | Consequência |
 | --- | --- | --- |
 | Quem edita | Organizador edita qualquer passeio; participante edita apenas a própria sugestão em votação | Mantém o controle do roteiro confirmado com o organizador |
 | O que acontece com os votos | Qualquer alteração efetiva nos campos editáveis zera todos os votos daquele passeio | Ninguém permanece apoiando uma proposta diferente da que votou; até correções pequenas exigem novos votos |
 | Passeio confirmado | Quando editado, volta automaticamente para “Em votação” | Sai do total de custos confirmados e precisa de nova confirmação do organizador |
 
-Salvar sem modificar os dados não zera votos nem altera o status. Aprovar este documento define o comportamento desejado; a implementação será uma etapa posterior.
+Salvar sem modificar os dados não zera votos nem altera o status. A aprovação define o comportamento desejado; a implementação permanece como etapa posterior.
 
 ## Problema e objetivo
 
@@ -47,7 +47,7 @@ Exemplo: o grupo sugeriu uma visita ao museu às 14h, mas o horário correto é 
 
 ## Regras de negócio e permissões
 
-### Permissões propostas
+### Permissões aprovadas
 
 | Pessoa | Passeio em votação | Passeio confirmado |
 | --- | --- | --- |
@@ -107,7 +107,7 @@ Manter os componentes shadcn, estilos e comportamento responsivo existentes. Inp
 
 ### GraphQL e serviço
 
-Contrato proposto:
+Contrato definido na spec:
 
 ```graphql
 updateActivity(id: ID!, input: ActivityInput!, expectedVersion: Int!): Trip!
@@ -171,18 +171,20 @@ Executar lint, typecheck, testes relevantes e builds do app e Storybook antes de
 
 Não requer serviço pago, novas variáveis de ambiente ou mudança no SMTP. Em caso de falha do frontend, voltar ao deploy anterior, mantendo a migração aditiva se compatível. Não reverter a estrutura de forma destrutiva nem tentar restaurar votos apagados; qualquer problema no banco exige correção incremental. A compatibilidade do rollback deve ser verificada antes da publicação.
 
-## Decisões aguardando Gabriel
+## Decisões aprovadas por Gabriel
 
-- [ ] Aprovar as permissões: organizador edita todos; autor edita apenas a própria sugestão em votação.
-- [ ] Aprovar zerar votos em qualquer mudança efetiva, inclusive correção de texto, aceitando o custo de votar novamente.
-- [ ] Aprovar que a edição de um confirmado o devolva à votação e o retire do custo confirmado até nova confirmação.
-- [ ] Aprovar o formulário dentro do card, sem nova página ou modal de edição.
+- [x] Organizador edita todos; autor edita apenas a própria sugestão em votação.
+- [x] Zerar votos em qualquer mudança efetiva, inclusive correção de texto, aceitando o custo de votar novamente.
+- [x] A edição de um confirmado o devolve à votação e o retira do custo confirmado até nova confirmação.
+- [x] Formulário dentro do card, sem nova página ou modal de edição.
+
+Aprovação registrada nesta conversa em 2026-10-29: “ta aprovado”. Os critérios de aceite continuam desmarcados porque a implementação e os testes ainda não foram realizados.
 
 Se uma decisão mudar, revisar os critérios de aceite e os impactos técnicos antes de iniciar o desenvolvimento.
 
 ## Entrega
 
-- Especificação: rascunho para revisão.
+- Especificação: aprovada, pronta para implementação.
 - Código e migração: não implementados.
 - Publicação: não realizada para esta funcionalidade.
-- Bloqueio: decisões de produto acima aguardam validação; não é uma falha técnica.
+- Decisões de produto pendentes: nenhuma nesta versão da spec.
