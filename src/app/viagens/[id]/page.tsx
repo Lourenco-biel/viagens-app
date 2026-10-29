@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { TripDetails } from "@/features/trips/components/trip-details";
@@ -9,9 +9,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
   if (!z.uuid().safeParse(id).success) notFound();
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-10 sm:px-6">
-      <Link className="text-sm underline underline-offset-4" href="/viagens">
-        Voltar para suas viagens
-      </Link>
+      <BackLink href="/viagens" label="Voltar para suas viagens" />
       <TripDetails id={id} />
     </main>
   );
