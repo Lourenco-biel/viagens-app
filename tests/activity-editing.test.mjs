@@ -9,6 +9,7 @@ const author = "22222222-2222-4222-8222-222222222222";
 const other = "33333333-3333-4333-8333-333333333333";
 const outsider = "44444444-4444-4444-8444-444444444444";
 let trip, activity;
+let legacyBefore, legacyAfter, legacyVotes;
 async function actor(id) {
   await db.exec("reset role");
   await db.query("select set_config('request.jwt.claim.sub', $1, false)", [id]);
@@ -55,7 +56,29 @@ before(async () => {
   const directory = new URL("../supabase/migrations/", import.meta.url);
   for (const file of (await readdir(directory)).filter((f) => f.endsWith(".sql")).sort()) {
     await db.exec(await readFile(new URL(file, directory), "utf8"));
+    if (file === "202610260001_mvp.sql") {
+      await actor(owner);
+      trip = (
+        await db.query(
+          "insert into public.trips(owner_id,name,destination,start_date,end_date) values ($1,'Viagem existente','Curitiba','2026-12-10','2026-12-12') returning id",
+          [owner],
+        )
+      ).rows[0].id;
+      activity = (
+        await db.query(
+          "insert into public.activities(trip_id,created_by,title,day,estimated_cost) values ($1,$2,'Passeio existente','2026-12-11',20) returning id",
+          [trip, owner],
+        )
+      ).rows[0].id;
+      await db.query("insert into public.activity_votes values ($1,$2)", [activity, owner]);
+      await db.query("update public.activities set status='confirmed' where id=$1", [activity]);
+      legacyBefore = await current();
+      await db.exec("reset role");
+    }
   }
+  await actor(owner);
+  legacyAfter = await current();
+  legacyVotes = await votes();
 });
 beforeEach(async () => {
   await db.exec("reset role; truncate public.trips cascade");
@@ -82,6 +105,11 @@ beforeEach(async () => {
   await db.query("insert into public.activity_votes values ($1,$2)", [activity, author]);
 });
 after(() => db.close());
+
+test("migration preserves existing confirmed activities and votes while initializing version", () => {
+  assert.deepEqual(legacyAfter, { ...legacyBefore, version: 1 });
+  assert.equal(legacyVotes.length, 1);
+});
 
 test("author edits own suggestion atomically, preserving identity and clearing votes", async () => {
   const original = await current();

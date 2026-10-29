@@ -7,6 +7,20 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: viagens_test
+          POSTGRES_PASSWORD: viagens_test
+          POSTGRES_DB: viagens_activity_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,6 +33,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test -- --runInBand
       - run: npm run test:db
+      - run: npm run test:db:concurrency
+        env:
+          DATABASE_TEST_URL: postgresql://viagens_test:viagens_test@127.0.0.1:5432/viagens_activity_test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run build-storybook
