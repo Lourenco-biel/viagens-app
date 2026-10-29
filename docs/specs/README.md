@@ -27,7 +27,7 @@ O status de cada spec indica se a proposta está em discussão, pronta para dese
 
 | Spec | Objetivo | Status |
 | --- | --- | --- |
-| [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Pronta |
+| [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Em validação |
 
 IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP. Vou definir o escopo de cada uma quando entrar no planejamento.
 

@@ -1,11 +1,11 @@
 # 001 — Edição de passeios
 
-- Status: Pronta para implementação
+- Status: Em validação
 - Criada em: 2026-10-29
 - Atualizada em: 2026-10-29
 - Revisão do escopo: concluída em 2026-10-29
-- Validação da entrega: pendente
-- Implementação: não iniciada
+- Validação da entrega: testes locais realizados; homologação no Supabase remoto pendente
+- Implementação: concluída localmente, ainda não publicada
 
 ## O que quero fazer
 
@@ -17,7 +17,7 @@ Quero permitir a edição de um passeio direto no roteiro, sem precisar excluir 
 | O que acontece com os votos | Qualquer alteração efetiva nos campos editáveis zera todos os votos daquele passeio | Ninguém permanece apoiando uma proposta diferente da que votou; até correções pequenas exigem novos votos |
 | Passeio confirmado | Quando editado, volta automaticamente para “Em votação” | Sai do total de custos confirmados e precisa de nova confirmação do organizador |
 
-Salvar sem modificar os dados mantém os votos e o status. O escopo está fechado; a implementação ainda não começou.
+Salvar sem modificar os dados mantém os votos e o status. O escopo está fechado e a implementação local está disponível para validação.
 
 ## Problema e objetivo
 
@@ -123,12 +123,12 @@ updateActivity(id: ID!, input: ActivityInput!, expectedVersion: Int!): Trip!
 
 ### Banco e migração
 
-Atualmente, a política `activities_edit` permite UPDATE apenas ao organizador, e não existe controle de versão. A implementação precisa de uma nova migração incremental; não editar a migração inicial já aplicada.
+A migração incremental `202610290001_activity_editing.sql` adiciona controle de versão e a função transacional `update_activity`. A migração inicial permanece inalterada.
 
 - Adicionar `version` inteira, não nula, inicialmente `1` para registros existentes e novos. Alterações efetivas de conteúdo ou status incrementam a versão; votos isolados e salvamentos sem alteração não incrementam.
-- Ajustar permissões para permitir ao autor editar sua sugestão em votação. Proteger autor, identificador, viagem de origem, data de criação e versão contra alterações arbitrárias.
+- A edição de conteúdo passa pela função `update_activity`, que permite ao autor editar sua sugestão em votação. UPDATE direto fica restrito à coluna de status e ao organizador. Autor, identificador, viagem de origem, data de criação e versão ficam protegidos contra alterações arbitrárias.
 - Garantir que um participante não consiga confirmar o passeio, editar um confirmado ou contornar regras usando diretamente a Data API do Supabase.
-- Centralizar no banco a atualização atômica de conteúdo, status e votos, por função transacional e/ou triggers com permissões restritas. A escolha exata será feita na implementação, preservando a mesma regra para todos os caminhos de escrita.
+- A função bloqueia a viagem, a participação e o passeio durante a edição. Uma trigger normaliza os campos, reinicia votos, reabre o passeio e incrementa a versão. Inserir votos também bloqueia o passeio, garantindo a ordem entre voto e edição.
 - Coordenar edição, votação e alteração de status para cumprir as regras de concorrência. Manter a proteção existente contra dias fora do período da viagem.
 - Se houver função com `SECURITY DEFINER`, validar explicitamente a identidade e as permissões, limitar seu escopo e fixar o `search_path`, conforme o padrão existente.
 
@@ -150,18 +150,20 @@ Atualmente, a política `activities_edit` permite UPDATE apenas ao organizador, 
 
 ## Validação
 
-Vou usar os cenários abaixo para validar a implementação. Os testes ainda não foram executados.
+Os testes automatizados locais cobrem os cenários abaixo. A homologação com o Supabase remoto e o domínio publicado continua pendente.
 
 | Cenário | Método e ambiente | Resultado / evidência |
 | --- | --- | --- |
-| Contrato GraphQL, validação e erros de versão | Jest; schema e serviço com dependências controladas | Não executado |
-| Permissões, imutabilidade, votos, status, no-op e rollback | Testes SQL com PGlite, aplicando migração inicial e nova migração | Não executado |
-| Conflitos e corridas entre sessões distintas | Teste de integração em PostgreSQL com conexões independentes, em ambiente de teste; PGlite isolado não basta para comprovar concorrência real | Não executado |
-| Formulário preenchido, avisos, cancelamento e erros | Storybook, estados de criação e edição | Não executado |
-| Organizador, autor e outro participante; edição, erro e conflito | Playwright desktop e celular com respostas GraphQL simuladas | Não executado |
+| Contrato GraphQL, validação e erros de versão | Jest; schema e serviço com dependências controladas | 52 testes passaram no conjunto do projeto |
+| Permissões, imutabilidade, votos, status, no-op e rollback | Testes SQL com PGlite, aplicando migração inicial e nova migração | 16 testes passaram, incluindo dados anteriores à migração e regressão do MVP |
+| Conflitos e corridas entre sessões distintas | PostgreSQL 16 local com conexões independentes | 4 cenários passaram: voto antes/depois da edição, duas edições e confirmação concorrente |
+| Formulário preenchido, avisos, cancelamento e erros | Storybook, estados de criação e edição | Histórias de edição, falha e conflito adicionadas; build passou |
+| Organizador, autor e outro participante; edição, erro e conflito | Playwright desktop e celular com respostas GraphQL simuladas | 32 testes passaram, incluindo 12 cenários de edição |
 | Persistência e permissões reais com duas contas | Homologação manual no Supabase, seguida de teste no domínio publicado | Não executado |
 
-Executar lint, typecheck, testes relevantes e builds do app e Storybook antes de publicar. Registrar os resultados efetivamente obtidos, distinguindo simulação de verificação no banco real.
+Lint, TypeScript e builds do Next.js e Storybook passaram localmente em 29/10/2026. O Storybook continua emitindo avisos de dependências sobre `use client` e tamanho dos bundles, sem falha no build. A CI remota ainda depende do push.
+
+A execução local do Playwright usa um worker para evitar pressão de memória no WSL; a regressão completa passou nessa configuração.
 
 ## Publicação e compatibilidade
 
@@ -179,13 +181,14 @@ Não requer serviço pago, novas variáveis de ambiente ou mudança no SMTP. Em 
 - Um passeio confirmado volta à votação quando for editado. Assim, o roteiro e o total de custos confirmados só voltam a incluí-lo depois de uma nova confirmação do organizador.
 - O formulário fica dentro do card para manter o contexto do roteiro e evitar uma nova página só para essa edição.
 
-Não há decisões de produto em aberto. Os critérios de aceite serão marcados conforme eu validar os resultados da implementação.
+Não há decisões de produto em aberto. Os critérios de aceite permanecem como checklist para minha validação final; os resultados automatizados estão registrados na tabela acima.
 
 Se eu mudar alguma dessas regras, preciso atualizar os critérios de aceite e os impactos técnicos junto com a decisão.
 
 ## Entrega
 
 - Escopo: definido.
-- Código e migração: não implementados.
+- Código e migração: implementados localmente.
 - Publicação: não realizada para esta funcionalidade.
 - Decisões de produto pendentes: nenhuma nesta versão da spec.
+- Próximo passo: aplicar a migração no Supabase, publicar o código e homologar com duas contas.

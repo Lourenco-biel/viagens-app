@@ -21,7 +21,7 @@ Preencha o ambiente conforme as etapas abaixo. Sem configuração, a aplicação
 ## Preparar o Supabase
 
 1. Crie um projeto no Supabase e guarde a senha do banco em local seguro. Mantenha **Enable Data API** e **Enable automatic RLS** ativos; desative **Automatically expose new tables**, pois a migração concede as permissões explicitamente.
-2. No SQL Editor, execute o conteúdo de `supabase/migrations/202610260001_mvp.sql` **uma vez, em um projeto novo**. A migração cria as tabelas, funções, triggers e políticas RLS.
+2. Em um projeto novo, execute os arquivos de `supabase/migrations/` uma vez cada, em ordem de nome. Em um projeto existente, aplique somente as migrações ainda não executadas. Não reaplique a migração inicial.
 3. Copie a URL do projeto e a chave **publishable** (ou a antiga chave anon) para `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
@@ -55,6 +55,14 @@ npm run build-storybook
 - Esses testes não substituem a homologação do Supabase remoto: cookies, envio de e-mail, PostgREST e persistência precisam ser conferidos com o projeto configurado.
 - Playwright usa portas 3100 e 54329, com saída em `.next-e2e`. Não precisa alterar seu ambiente real.
 
+Para os testes de concorrência, use PostgreSQL local com um banco **vazio e exclusivo de testes** chamado `viagens_activity_test`, e o cliente `psql` disponível no PATH:
+
+```bash
+DATABASE_TEST_URL=postgresql://USUARIO:SENHA@127.0.0.1:5432/viagens_activity_test npm run test:db:concurrency
+```
+
+O teste aplica todas as migrações e usa conexões independentes. Não use o projeto Supabase real para esse comando. Para repetir, recrie apenas esse banco de teste; o script recusa um banco já preenchido. A CI prepara um PostgreSQL temporário para essa verificação. `PSQL_PATH` permite informar outro caminho para o executável.
+
 ## Storybook
 
 ```bash
@@ -74,6 +82,12 @@ Abra `http://localhost:6006`. Há histórias para cards, estados vazios, criaç�
 7. Teste o checklist de homologação em [docs/mvp.md](docs/mvp.md).
 
 Aplicativo publicado: [Viagens App](https://viagens-app-three.vercel.app/). As variáveis de conexão ficam na Vercel, e a credencial SMTP fica no Supabase; não são armazenadas no repositório.
+
+### Publicar a edição de passeios
+
+A edição depende de `supabase/migrations/202610290001_activity_editing.sql`. Aplique essa migração no Supabase antes de publicar os commits da funcionalidade. O código anterior continua funcionando com a migração; o novo código requer a coluna `version` e a função `update_activity`.
+
+Após o deploy, valide edição, reinício dos votos e permissões com duas contas no endereço publicado. Os testes locais não substituem essa homologação. Veja a [spec 001](docs/specs/001-edicao-de-passeios.md).
 
 ## Próximas alterações
 
