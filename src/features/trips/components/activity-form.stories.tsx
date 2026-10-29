@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ActivityForm } from "./activity-form";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
 
 const meta = {
   title: "Viagens/ActivityForm",
@@ -34,5 +35,38 @@ export const ErroAoSalvar: Story = {
     onSaveAction: async () => {
       throw new Error("offline");
     },
+  },
+};
+
+export const Edicao: Story = {
+  args: {
+    initialValues: {
+      title: "Jardim Botânico",
+      day: "2026-12-11",
+      startTime: "14:00",
+      location: "Curitiba",
+      estimatedCost: 25,
+    },
+    onCancelAction: () => {},
+    confirmSave: () => window.confirm("Salvar e zerar os votos?"),
+  },
+};
+export const EdicaoComErro: Story = {
+  args: { ...Edicao.args, ...ErroAoSalvar.args },
+};
+export const Conflito: Story = {
+  args: {
+    ...Edicao.args,
+    onSaveAction: async () => {
+      throw new CombinedGraphQLErrors({
+        errors: [
+          {
+            message: "Este passeio mudou. Carregue a versão atual antes de salvar.",
+            extensions: { code: "CONFLICT" },
+          },
+        ],
+      });
+    },
+    onReloadAction: async () => {},
   },
 };

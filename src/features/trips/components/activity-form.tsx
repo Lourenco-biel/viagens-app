@@ -6,17 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { activitySchema, type ActivityInput } from "../model/activity";
 import { errorMessage } from "@/lib/graphql/error-message";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import { sameActivityValues } from "../lib/activity-values";
 
 export function ActivityForm({
   startDate,
   endDate,
   onSaveAction,
+  initialValues,
+  confirmSave,
+  onCancelAction,
+  onReloadAction,
 }: {
   startDate: string;
   endDate: string;
   onSaveAction: (input: ActivityInput) => Promise<void>;
+  initialValues?: ActivityInput;
+  confirmSave?: () => boolean;
+  onCancelAction?: () => void;
+  onReloadAction?: () => Promise<void>;
 }) {
   const id = useId();
+  const [initial] = useState(initialValues);
+  const editing = Boolean(initial);
+  const [dirty, setDirty] = useState(false);
+  const [conflict, setConflict] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof ActivityInput, string[]>>>({});
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -56,20 +70,36 @@ export function ActivityForm({
       return;
     }
     setErrors({});
+    if (initial && !sameActivityValues(initial, result.data) && confirmSave && !confirmSave())
+      return;
     setPending(true);
     try {
       await onSaveAction(result.data);
-      form.reset();
+      if (!editing) form.reset();
+      setDirty(false);
       setSaved(true);
     } catch (error) {
       setError(errorMessage(error));
+      if (CombinedGraphQLErrors.is(error)) {
+        setConflict(error.errors.some((item) => item.extensions?.code === "CONFLICT"));
+        const fields = error.errors.find((item) => item.extensions?.fieldErrors)?.extensions
+          ?.fieldErrors;
+        if (fields && typeof fields === "object")
+          setErrors(fields as Partial<Record<keyof ActivityInput, string[]>>);
+      }
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <form onSubmit={submit} noValidate aria-label="Sugerir passeio" className="space-y-4">
+    <form
+      onSubmit={submit}
+      onChange={() => setDirty(true)}
+      noValidate
+      aria-label={editing ? "Editar passeio" : "Sugerir passeio"}
+      className="space-y-4"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         {fields.map((field) => (
           <div key={field.name} className="space-y-2">
@@ -82,8 +112,15 @@ export function ActivityForm({
               type={field.type}
               required={field.required}
               disabled={pending}
+              autoFocus={editing && field.name === "title"}
               defaultValue={
-                field.name === "day" ? startDate : field.name === "estimatedCost" ? 0 : undefined
+                initial
+                  ? (initial[field.name] ?? "")
+                  : field.name === "day"
+                    ? startDate
+                    : field.name === "estimatedCost"
+                      ? 0
+                      : undefined
               }
               min={
                 field.name === "day" ? startDate : field.name === "estimatedCost" ? 0 : undefined
@@ -117,9 +154,42 @@ export function ActivityForm({
           Passeio adicionado às sugestões.
         </p>
       )}
+      {conflict && onReloadAction && (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={async () => {
+            if (!window.confirm("Descartar suas alterações e carregar a versão atual?")) return;
+            setPending(true);
+            try {
+              await onReloadAction();
+            } catch (error) {
+              setError(errorMessage(error));
+            } finally {
+              setPending(false);
+            }
+          }}
+        >
+          Carregar versão atual
+        </Button>
+      )}
       <Button type="submit" disabled={pending}>
-        {pending ? "Salvando..." : "Adicionar sugestão"}
+        {pending ? "Salvando..." : editing ? "Salvar alterações" : "Adicionar sugestão"}
       </Button>
+      {onCancelAction && (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={() => {
+            if (!dirty || window.confirm("Descartar as alterações deste passeio?"))
+              onCancelAction();
+          }}
+        >
+          Cancelar edição
+        </Button>
+      )}
     </form>
   );
 }

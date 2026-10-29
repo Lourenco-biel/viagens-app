@@ -88,11 +88,28 @@ export async function mockApi(page: Page, initial: TripDetail[] = [structuredClo
       case "UpdateActivity": {
         const activity = trip.activities.find((a) => a.id === v.id)!;
         if (activity.version !== v.expectedVersion) {
-          await route.fulfill({ json: { errors: [{ message: "Este passeio mudou. Carregue a versão atual antes de salvar.", extensions: { code: "CONFLICT" } }] } });
+          await route.fulfill({
+            json: {
+              errors: [
+                {
+                  message: "Este passeio mudou. Carregue a versão atual antes de salvar.",
+                  extensions: { code: "CONFLICT" },
+                },
+              ],
+            },
+          });
           return;
         }
-        const changed = Object.entries(v.input).some(([key, value]) => activity[key as keyof typeof activity] !== value);
-        if (changed) Object.assign(activity, v.input, { version: activity.version + 1, votes: 0, votedByMe: false, status: "proposed" });
+        const changed = Object.entries(v.input).some(
+          ([key, value]) => activity[key as keyof typeof activity] !== value,
+        );
+        if (changed)
+          Object.assign(activity, v.input, {
+            version: activity.version + 1,
+            votes: 0,
+            votedByMe: false,
+            status: "proposed",
+          });
         data = { updateActivity: trip };
         break;
       }
