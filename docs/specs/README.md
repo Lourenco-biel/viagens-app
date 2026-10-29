@@ -23,9 +23,10 @@ As regras atuais estão em [MVP](../mvp.md), e os resultados dos testes em [Vali
 
 ## Índice
 
-Ainda não há alterações especificadas. A próxima funcionalidade será definida a partir do uso do MVP e das prioridades de Gabriel.
+As propostas abaixo aguardam validação antes de ampliar o comportamento do MVP.
 
 | Spec | Objetivo | Status |
 | --- | --- | --- |
+| [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Rascunho |
 
 IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP. Sua menção no histórico não representa compromisso de implementação.
