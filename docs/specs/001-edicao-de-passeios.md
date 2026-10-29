@@ -1,28 +1,29 @@
 # 001 — Edição de passeios
 
-- Status: Pronta — aprovada por Gabriel em 2026-10-29
+- Status: Pronta para implementação
 - Criada em: 2026-10-29
 - Atualizada em: 2026-10-29
-- Responsável pela validação: Gabriel
+- Revisão do escopo: concluída em 2026-10-29
+- Validação da entrega: pendente
 - Implementação: não iniciada
 
-## Resumo aprovado
+## O que quero fazer
 
-Permitir corrigir um passeio no próprio roteiro, sem excluí-lo. Gabriel aprovou esta spec em 29 de outubro de 2026, incluindo as decisões abaixo:
+Quero permitir a edição de um passeio direto no roteiro, sem precisar excluir e cadastrar de novo. Para esta primeira versão, defini estas regras:
 
-| Decisão | Regra aprovada | Consequência |
+| Decisão | Regra | Consequência |
 | --- | --- | --- |
 | Quem edita | Organizador edita qualquer passeio; participante edita apenas a própria sugestão em votação | Mantém o controle do roteiro confirmado com o organizador |
 | O que acontece com os votos | Qualquer alteração efetiva nos campos editáveis zera todos os votos daquele passeio | Ninguém permanece apoiando uma proposta diferente da que votou; até correções pequenas exigem novos votos |
 | Passeio confirmado | Quando editado, volta automaticamente para “Em votação” | Sai do total de custos confirmados e precisa de nova confirmação do organizador |
 
-Salvar sem modificar os dados não zera votos nem altera o status. A aprovação define o comportamento desejado; a implementação permanece como etapa posterior.
+Salvar sem modificar os dados mantém os votos e o status. O escopo está fechado; a implementação ainda não começou.
 
 ## Problema e objetivo
 
-Hoje, corrigir uma sugestão exige removê-la e cadastrar outra. Isso dificulta ajustes de horário, endereço e custo, além de trocar a identidade do passeio.
+Hoje, para corrigir uma sugestão, preciso removê-la e cadastrar outra. Quero eliminar esse retrabalho para ajustes de horário, endereço e custo, mantendo o mesmo passeio e sua autoria.
 
-Exemplo: o grupo sugeriu uma visita ao museu às 14h, mas o horário correto é 15h. Quem tiver permissão poderá abrir “Editar passeio”, ajustar o horário e salvar. O passeio mantém seu identificador e autoria; os votos serão reiniciados conforme as regras propostas.
+Exemplo: o grupo sugeriu uma visita ao museu às 14h, mas o horário correto é 15h. Quem tiver permissão poderá abrir “Editar passeio”, ajustar o horário e salvar. O passeio mantém seu identificador e autoria; os votos serão reiniciados conforme as regras abaixo.
 
 ## Escopo
 
@@ -47,7 +48,7 @@ Exemplo: o grupo sugeriu uma visita ao museu às 14h, mas o horário correto é 
 
 ## Regras de negócio e permissões
 
-### Permissões aprovadas
+### Quem pode editar
 
 | Pessoa | Passeio em votação | Passeio confirmado |
 | --- | --- | --- |
@@ -99,7 +100,7 @@ Esses limites já existem na criação e devem ser compartilhados com a edição
 6. Em sucesso, fechar o formulário e mostrar “Passeio atualizado. A votação foi reiniciada.” Reposicionar o card se o dia ou horário mudou e atualizar o resumo de custos.
 7. Em erro de campo, exibir a mensagem junto ao campo; em falha de conexão, manter o formulário e permitir nova tentativa. Ao cancelar com alterações locais, pedir confirmação de descarte.
 
-Reutilizar `ActivityForm` para criação e edição, com valores iniciais e textos adequados a cada modo. Na criação, continuar limpando os campos após sucesso; na edição, fechar após sucesso. Separar o card em `ActivityCard` para concentrar a apresentação e as ações de um passeio, mantendo `Itinerary` responsável pela organização do roteiro. Nomes de props e detalhes internos serão definidos na implementação.
+Vou reaproveitar `ActivityForm` para criação e edição, com valores iniciais e textos adequados a cada modo. Na criação, os campos continuam sendo limpos após sucesso; na edição, o formulário fecha. O card fica em `ActivityCard`, com a apresentação e as ações do passeio, enquanto `Itinerary` organiza o roteiro. Os nomes das props e os detalhes internos ficam para a implementação.
 
 Manter os componentes shadcn, estilos e comportamento responsivo existentes. Inputs precisam de labels, erros associados por `aria-describedby` e navegação por teclado. Ao abrir, levar o foco ao primeiro campo; ao fechar, devolver ao botão de edição do card, inclusive se ele mudar de posição. Anunciar sucesso com `role="status"`.
 
@@ -107,7 +108,7 @@ Manter os componentes shadcn, estilos e comportamento responsivo existentes. Inp
 
 ### GraphQL e serviço
 
-Contrato definido na spec:
+Mutation para salvar a edição:
 
 ```graphql
 updateActivity(id: ID!, input: ActivityInput!, expectedVersion: Int!): Trip!
@@ -149,7 +150,7 @@ Atualmente, a política `activities_edit` permite UPDATE apenas ao organizador, 
 
 ## Validação
 
-Nenhum teste desta funcionalidade foi executado: esta entrega é somente a especificação.
+Vou usar os cenários abaixo para validar a implementação. Os testes ainda não foram executados.
 
 | Cenário | Método e ambiente | Resultado / evidência |
 | --- | --- | --- |
@@ -164,27 +165,27 @@ Executar lint, typecheck, testes relevantes e builds do app e Storybook antes de
 
 ## Publicação e compatibilidade
 
-1. Após validação da spec e implementação, testar a nova migração com dados existentes e validar compatibilidade com a versão atual do aplicativo.
+1. Após implementar, testar a nova migração com dados existentes e validar compatibilidade com a versão atual do aplicativo.
 2. Aplicar a migração antes do deploy que depende de `version` e da operação de edição.
 3. Publicar o app e verificar os critérios de aceite no ambiente publicado com dados de teste.
 4. Atualizar as regras vigentes em `docs/mvp.md` apenas quando a funcionalidade estiver entregue.
 
 Não requer serviço pago, novas variáveis de ambiente ou mudança no SMTP. Em caso de falha do frontend, voltar ao deploy anterior, mantendo a migração aditiva se compatível. Não reverter a estrutura de forma destrutiva nem tentar restaurar votos apagados; qualquer problema no banco exige correção incremental. A compatibilidade do rollback deve ser verificada antes da publicação.
 
-## Decisões aprovadas por Gabriel
+## Decisões e motivos
 
-- [x] Organizador edita todos; autor edita apenas a própria sugestão em votação.
-- [x] Zerar votos em qualquer mudança efetiva, inclusive correção de texto, aceitando o custo de votar novamente.
-- [x] A edição de um confirmado o devolve à votação e o retira do custo confirmado até nova confirmação.
-- [x] Formulário dentro do card, sem nova página ou modal de edição.
+- Vou manter a edição de qualquer passeio com o organizador. O autor pode ajustar a própria sugestão enquanto estiver em votação, seguindo a divisão de permissões que o roteiro já usa.
+- Decidi zerar os votos em qualquer mudança efetiva. Mesmo uma correção de texto vai exigir novos votos; prefiro uma regra previsível a tentar adivinhar quais mudanças afetam a decisão do grupo.
+- Um passeio confirmado volta à votação quando for editado. Assim, o roteiro e o total de custos confirmados só voltam a incluí-lo depois de uma nova confirmação do organizador.
+- O formulário fica dentro do card para manter o contexto do roteiro e evitar uma nova página só para essa edição.
 
-Aprovação registrada nesta conversa em 2026-10-29: “ta aprovado”. Os critérios de aceite continuam desmarcados porque a implementação e os testes ainda não foram realizados.
+Não há decisões de produto em aberto. Os critérios de aceite serão marcados conforme eu validar os resultados da implementação.
 
-Se uma decisão mudar, revisar os critérios de aceite e os impactos técnicos antes de iniciar o desenvolvimento.
+Se eu mudar alguma dessas regras, preciso atualizar os critérios de aceite e os impactos técnicos junto com a decisão.
 
 ## Entrega
 
-- Especificação: aprovada, pronta para implementação.
+- Escopo: definido.
 - Código e migração: não implementados.
 - Publicação: não realizada para esta funcionalidade.
 - Decisões de produto pendentes: nenhuma nesta versão da spec.

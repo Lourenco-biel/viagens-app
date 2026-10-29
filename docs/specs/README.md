@@ -1,6 +1,6 @@
 # Especificações de alterações
 
-Esta pasta reúne as propostas para mudanças no projeto. Cada alteração tem um arquivo com o problema, o comportamento esperado e os critérios para validar a entrega.
+Uso esta pasta para organizar as próximas alterações do projeto antes de começar a desenvolver. Cada spec registra o problema que quero resolver, as regras e o que preciso testar para considerar a entrega pronta.
 
 As regras atuais estão em [MVP](../mvp.md), e os resultados dos testes em [Validação do MVP](../validacao-mvp.md). Os arquivos `.spec.ts` em `e2e/` são testes automatizados, não especificações de produto.
 
@@ -15,7 +15,7 @@ As regras atuais estão em [MVP](../mvp.md), e os resultados dos testes em [Vali
 ## Status
 
 - **Rascunho:** proposta em discussão, com decisões em aberto.
-- **Pronta:** escopo e critérios definidos e prioridade acordada com Gabriel.
+- **Pronta:** escopo revisado, decisões fechadas e prioridade definida.
 - **Em implementação:** desenvolvimento iniciado.
 - **Em validação:** implementação disponível, com critérios ainda em verificação.
 - **Concluída:** critérios atendidos, com evidências registradas.
@@ -29,4 +29,10 @@ O status de cada spec indica se a proposta está em discussão, pronta para dese
 | --- | --- | --- |
 | [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Pronta |
 
-IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP. Sua menção no histórico não representa compromisso de implementação.
+IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP. Vou definir o escopo de cada uma quando entrar no planejamento.
+
+## Escrita
+
+As specs são documentos do projeto. Uso primeira pessoa para explicar objetivos e escolhas, e regras diretas para descrever o comportamento da aplicação. Evito relatos da conversa, aprovações em terceira pessoa e formalidades que não ajudam a implementar ou validar a mudança.
+
+Mantenho separados o que decidi fazer, o que já foi implementado e o que realmente testei. Sou responsável por revisar as decisões e validar a entrega.

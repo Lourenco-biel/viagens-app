@@ -3,11 +3,13 @@
 - Status: Rascunho
 - Criada em: AAAA-MM-DD
 - Atualizada em: AAAA-MM-DD
-- Responsável: A definir
+- Validação: Pendente
 
 ## Problema e objetivo
 
-Descreva quem encontra o problema, em qual situação e qual resultado a alteração deve permitir. Inclua um exemplo do comportamento atual e do esperado.
+Hoje, [situação atual e dificuldade]. Quero [resultado esperado] para que [benefício para quem usa].
+
+Exemplo: [como funciona hoje e como deve funcionar depois].
 
 ## Escopo
 
@@ -21,8 +23,10 @@ Descreva quem encontra o problema, em qual situação e qual resultado a altera�
 
 ## Regras de negócio e permissões
 
-- Defina validações, limites e quem pode executar cada ação.
-- Descreva o efeito sobre dados existentes e as situações de erro relevantes.
+- Quem pode fazer cada ação: a definir.
+- Validações e limites: a definir.
+- O que acontece com os dados existentes: a definir.
+- Casos de erro e comportamento esperado: a definir.
 
 ## Fluxo e interface
 
@@ -45,7 +49,7 @@ Descreva quem encontra o problema, em qual situação e qual resultado a altera�
 
 ## Validação
 
-Liste somente verificações relevantes à mudança. Diferencie testes automatizados, testes com serviços simulados e validação manual no ambiente real.
+Vou validar os cenários abaixo. Para cada um, registrar o ambiente usado e o resultado obtido, distinguindo testes simulados de testes com os serviços reais.
 
 | Cenário | Método e ambiente | Resultado / evidência |
 | --- | --- | --- |
@@ -53,11 +57,14 @@ Liste somente verificações relevantes à mudança. Diferencie testes automatiz
 
 ## Publicação e compatibilidade
 
-Descreva a ordem de aplicação de migrações e deploy, configurações necessárias e como recuperar a versão anterior, se aplicável. Não inclua credenciais.
+- Ordem das migrações e do deploy: a definir.
+- Configurações necessárias, sem credenciais: a definir.
+- Como voltar à versão anterior, se necessário: a definir.
 
-## Decisões e dúvidas
+## Decisões
 
-- A definir.
+- Escolha: [o que decidi e por quê].
+- Em aberto: [o que ainda preciso resolver antes de implementar].
 
 ## Entrega
 
