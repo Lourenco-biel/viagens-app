@@ -25,4 +25,13 @@ describe("contrato GraphQL", () => {
     });
     expect(result.errors?.[0].extensions.code).toBe("BAD_USER_INPUT");
   });
+  it("recusa edição anônima antes de consultar o banco", async () => {
+    const result = await graphql({
+      schema,
+      source:
+        'mutation { updateActivity(id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", expectedVersion: 1, input: { title: "Museu", day: "2026-12-11", location: "", estimatedCost: 0 }) { id } }',
+      contextValue: { userId: "" },
+    });
+    expect(result.errors?.[0].extensions.code).toBe("UNAUTHENTICATED");
+  });
 });

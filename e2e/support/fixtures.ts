@@ -69,6 +69,7 @@ export async function mockApi(page: Page, initial: TripDetail[] = [structuredClo
           createdBy: user.id,
           votes: 0,
           votedByMe: false,
+          version: 1,
         });
         data = { addActivity: trip };
         break;
@@ -80,9 +81,21 @@ export async function mockApi(page: Page, initial: TripDetail[] = [structuredClo
         break;
       }
       case "SetActivityStatus":
+        trip.activities.find((a) => a.id === v.id)!.version += 1;
         trip.activities.find((a) => a.id === v.id)!.status = v.confirmed ? "confirmed" : "proposed";
         data = { setActivityStatus: trip };
         break;
+      case "UpdateActivity": {
+        const activity = trip.activities.find((a) => a.id === v.id)!;
+        if (activity.version !== v.expectedVersion) {
+          await route.fulfill({ json: { errors: [{ message: "Este passeio mudou. Carregue a versão atual antes de salvar.", extensions: { code: "CONFLICT" } }] } });
+          return;
+        }
+        const changed = Object.entries(v.input).some(([key, value]) => activity[key as keyof typeof activity] !== value);
+        if (changed) Object.assign(activity, v.input, { version: activity.version + 1, votes: 0, votedByMe: false, status: "proposed" });
+        data = { updateActivity: trip };
+        break;
+      }
       case "DeleteActivity":
         trip.activities = trip.activities.filter((a) => a.id !== v.id);
         data = { deleteActivity: trip };

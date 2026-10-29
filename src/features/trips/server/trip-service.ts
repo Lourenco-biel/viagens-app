@@ -13,7 +13,12 @@ function fail(message: string, code = "BAD_USER_INPUT"): never {
 
 function check(error: { code?: string; message: string } | null, fallback: string) {
   if (!error) return;
+  if (error.code === "40001")
+    fail("Este passeio mudou. Carregue a versão atual antes de salvar.", "CONFLICT");
+  if (error.code === "P0002") fail("Passeio não encontrado ou sem acesso.", "NOT_FOUND");
   if (error.code === "23514" && /período|passeios/.test(error.message)) fail(error.message);
+  if (["22023", "23514", "23502"].includes(error.code ?? ""))
+    fail("Verifique os dados e o período do passeio.");
   if (error.code === "42501") fail("Você não tem permissão para esta ação.", "FORBIDDEN");
   throw new GraphQLError(fallback, { extensions: { code: "OPERATION_FAILED" } });
 }
@@ -173,6 +178,7 @@ export async function tripDetail(ctx: GraphQLContext, id: string) {
     })),
     activities: activities!.map((a: ActivityRow) => ({
       id: a.id,
+      version: a.version,
       title: a.title,
       day: a.day,
       startTime: a.start_time?.slice(0, 5) ?? null,
@@ -249,6 +255,28 @@ export async function setActivityStatus(ctx: GraphQLContext, id: string, confirm
     .eq("id", id);
   check(error, "Não foi possível atualizar o passeio.");
   return tripDetail(ctx, activity.trip_id);
+}
+
+export async function updateActivity(
+  ctx: GraphQLContext,
+  id: string,
+  input: unknown,
+  expectedVersion: number,
+) {
+  parse(z.uuid(), id);
+  parse(z.number().int().positive(), expectedVersion);
+  const values = parse(activitySchema, input);
+  const { data, error } = await ctx.db.rpc("update_activity", {
+    target_activity: id,
+    expected_version: expectedVersion,
+    new_title: values.title,
+    new_day: values.day,
+    new_start_time: values.startTime,
+    new_location: values.location,
+    new_estimated_cost: values.estimatedCost,
+  });
+  check(error, "Não foi possível atualizar o passeio.");
+  return tripDetail(ctx, data!);
 }
 
 export async function deleteActivity(ctx: GraphQLContext, id: string) {

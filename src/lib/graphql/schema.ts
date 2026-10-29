@@ -4,7 +4,10 @@ import type { GraphQLContext } from "./context";
 import * as trips from "@/features/trips/server/trip-service";
 
 function authenticated(ctx: GraphQLContext) {
-  if (!ctx.userId) throw new GraphQLError("Entre na sua conta para continuar.", { extensions: { code: "UNAUTHENTICATED" } });
+  if (!ctx.userId)
+    throw new GraphQLError("Entre na sua conta para continuar.", {
+      extensions: { code: "UNAUTHENTICATED" },
+    });
   return ctx;
 }
 
@@ -19,7 +22,7 @@ export const schema = createSchema<GraphQLContext>({
     }
     type Member { userId: ID!, displayName: String!, isOwner: Boolean! }
     type Activity {
-      id: ID!, title: String!, day: String!, startTime: String, location: String!,
+      id: ID!, version: Int!, title: String!, day: String!, startTime: String, location: String!,
       estimatedCost: Float!, status: ActivityStatus!, createdBy: ID!, votes: Int!, votedByMe: Boolean!
     }
     type TripPage { items: [Trip!]!, total: Int!, hasTrips: Boolean! }
@@ -37,6 +40,7 @@ export const schema = createSchema<GraphQLContext>({
       updateTrip(id: ID!, input: TripInput!): Trip!
       deleteTrip(id: ID!): Boolean!
       addActivity(tripId: ID!, input: ActivityInput!): Trip!
+      updateActivity(id: ID!, input: ActivityInput!, expectedVersion: Int!): Trip!
       setActivityStatus(id: ID!, confirmed: Boolean!): Trip!
       deleteActivity(id: ID!): Trip!
       voteActivity(id: ID!, voted: Boolean!): Trip!
@@ -52,21 +56,28 @@ export const schema = createSchema<GraphQLContext>({
       trip: (_, { id }, ctx) => trips.tripDetail(authenticated(ctx), id),
     },
     Trip: {
-      members: (parent, _, ctx) => parent.members ?? trips.tripDetail(authenticated(ctx), parent.id).then((t) => t.members),
-      activities: (parent, _, ctx) => parent.activities ?? trips.tripDetail(authenticated(ctx), parent.id).then((t) => t.activities),
+      members: (parent, _, ctx) =>
+        parent.members ?? trips.tripDetail(authenticated(ctx), parent.id).then((t) => t.members),
+      activities: (parent, _, ctx) =>
+        parent.activities ??
+        trips.tripDetail(authenticated(ctx), parent.id).then((t) => t.activities),
     },
     Mutation: {
       createTrip: (_, { input }, ctx) => trips.saveTrip(authenticated(ctx), input),
       updateTrip: (_, { id, input }, ctx) => trips.saveTrip(authenticated(ctx), input, id),
       deleteTrip: (_, { id }, ctx) => trips.deleteTrip(authenticated(ctx), id),
-      addActivity: (_, { tripId, input }, ctx) => trips.addActivity(authenticated(ctx), tripId, input),
-      setActivityStatus: (_, { id, confirmed }, ctx) => trips.setActivityStatus(authenticated(ctx), id, confirmed),
+      addActivity: (_, { tripId, input }, ctx) =>
+        trips.addActivity(authenticated(ctx), tripId, input),
+      updateActivity: (_, { id, input, expectedVersion }, ctx) =>
+        trips.updateActivity(authenticated(ctx), id, input, expectedVersion),
+      setActivityStatus: (_, { id, confirmed }, ctx) =>
+        trips.setActivityStatus(authenticated(ctx), id, confirmed),
       deleteActivity: (_, { id }, ctx) => trips.deleteActivity(authenticated(ctx), id),
       voteActivity: (_, { id, voted }, ctx) => trips.voteActivity(authenticated(ctx), id, voted),
       createInvite: (_, { tripId }, ctx) => trips.createInvite(authenticated(ctx), tripId),
       acceptInvite: (_, { token }, ctx) => trips.acceptInvite(authenticated(ctx), token),
-      removeMember: (_, { tripId, userId }, ctx) => trips.removeMember(authenticated(ctx), tripId, userId),
+      removeMember: (_, { tripId, userId }, ctx) =>
+        trips.removeMember(authenticated(ctx), tripId, userId),
     },
   },
 });
-

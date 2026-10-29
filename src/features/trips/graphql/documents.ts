@@ -26,6 +26,7 @@ const detail = gql`
     }
     activities {
       id
+      version
       title
       day
       startTime
@@ -102,6 +103,18 @@ export const ADD_ACTIVITY: TypedDocumentNode<
   }
   ${detail}
 `;
+export const UPDATE_ACTIVITY: TypedDocumentNode<
+  { updateActivity: TripDetail },
+  { id: string; input: ActivityInput; expectedVersion: number }
+> = gql`
+  mutation UpdateActivity($id: ID!, $input: ActivityInput!, $expectedVersion: Int!) {
+    updateActivity(id: $id, input: $input, expectedVersion: $expectedVersion) {
+      ...TripDetailFields
+    }
+  }
+  ${detail}
+`;
+
 export const SET_ACTIVITY_STATUS: TypedDocumentNode<
   { setActivityStatus: TripDetail },
   { id: string; confirmed: boolean }
