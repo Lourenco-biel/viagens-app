@@ -67,4 +67,8 @@ GraphQL aceita POST JSON, recusa origens diferentes, exige autenticação e limi
 
 Projeto Supabase remoto conectado. Gabriel executou a migração e validou manualmente cadastro, persistência, convites, votação e restrições de acesso. O registro distingue as verificações automáticas dos resultados relatados em [validacao-mvp.md](validacao-mvp.md).
 
-Os testes Playwright continuam usando serviços simulados, e os testes SQL executam a migração em PostgreSQL em memória. SMTP foi adiado por decisão de Gabriel; publicação e os demais itens de homologação ainda estão pendentes.
+O aplicativo foi publicado em [viagens-app-three.vercel.app](https://viagens-app-three.vercel.app/), com SMTP Brevo conectado ao Supabase. Gabriel relatou sucesso no acesso publicado, no envio de recuperação de senha após autorizar o IP SMTP e no cadastro com confirmação de um usuário externo. Consulte o registro de validação para os limites dessas evidências.
+
+Os testes Playwright continuam usando serviços simulados, e os testes SQL executam a migração em PostgreSQL em memória. Testes locais não comprovam, por si só, o comportamento em produção.
+
+As próximas mudanças serão especificadas em [docs/specs](specs/README.md). Nenhuma nova funcionalidade está aprovada por este documento.

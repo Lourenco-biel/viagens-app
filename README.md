@@ -32,7 +32,7 @@ Preencha o ambiente conforme as etapas abaixo. Sem configuração, a aplicação
 
 Não use chave secret/service_role no navegador ou neste app. A API usa a sessão do usuário, e as políticas do banco decidem o acesso. Não comite `.env.local`.
 
-Se o ambiente já estiver configurado, preserve o arquivo `.env.local` existente. O projeto remoto foi conectado e os testes manuais realizados estão registrados em [docs/validacao-mvp.md](docs/validacao-mvp.md). SMTP e publicação continuam pendentes.
+Se o ambiente já estiver configurado, preserve o arquivo `.env.local` existente. O aplicativo está publicado na Vercel, conectado ao Supabase remoto e com SMTP Brevo configurado. Os resultados relatados por Gabriel estão registrados em [docs/validacao-mvp.md](docs/validacao-mvp.md).
 
 Alternativa com Supabase CLI: após instalar e autenticar a CLI, use `supabase link --project-ref SEU_PROJECT_REF` e `supabase db push` no projeto novo. Use somente uma forma de aplicar a migração. A configuração local está em `supabase/config.toml`; `supabase start` exige Docker.
 
@@ -69,11 +69,15 @@ Abra `http://localhost:6006`. Há histórias para cards, estados vazios, criaç�
 2. Suba o repositório para o GitHub e importe o projeto na Vercel, ou use outro host compatível com Next.js no servidor. Não use exportação HTML estática.
 3. Configure as duas variáveis de ambiente **antes do build**, inclusive em produção.
 4. Use Node.js 24 e os comandos `npm run build` / `npm run start`.
-5. No Supabase, altere o Site URL para o domínio HTTPS e adicione `https://SEU_DOMINIO/auth/callback` às Redirect URLs.
+5. No Supabase, altere o Site URL para o domínio HTTPS e adicione `https://SEU_DOMINIO/auth/callback?next=**` às Redirect URLs. O formulário inclui o destino no parâmetro `next`; o callback valida esse destino antes de redirecionar. Preserve `http://localhost:3000/**` para desenvolvimento local.
 6. Refaça o build se mudar variáveis `NEXT_PUBLIC_*`.
 7. Teste o checklist de homologação em [docs/mvp.md](docs/mvp.md).
 
-O projeto não foi publicado e não contém credenciais de produção.
+Aplicativo publicado: [Viagens App](https://viagens-app-three.vercel.app/). As variáveis de conexão ficam na Vercel, e a credencial SMTP fica no Supabase; não são armazenadas no repositório.
+
+## Próximas alterações
+
+Especificações ficam em [docs/specs](docs/specs/README.md), com um arquivo por alteração. Use o [modelo](docs/specs/TEMPLATE.md) para definir escopo, regras, impactos técnicos e critérios de aceite antes de implementar. Documentar uma proposta não amplia automaticamente o escopo do MVP.
 
 ## Organização
 
