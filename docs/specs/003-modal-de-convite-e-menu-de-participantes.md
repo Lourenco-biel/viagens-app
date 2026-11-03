@@ -1,10 +1,10 @@
 # 003 — Modal de convite e menu de participantes
 
-- Status: Rascunho
+- Status: Em validação
 - Criada em: 2026-11-03
 - Atualizada em: 2026-11-03
-- Validação do escopo: pendente
-- Implementação: não iniciada
+- Validação do escopo: concluída
+- Implementação: concluída localmente
 
 ## Objetivo
 
@@ -102,35 +102,39 @@ Cancelar a confirmação não altera os dados e devolve o foco ao botão de trê
 
 ## Critérios de aceite
 
-- [ ] Acessar um convite autenticado abre o modal automaticamente, inclusive por link externo e recarregamento.
-- [ ] Sem sessão, o login/cadastro preserva o convite e retorna ao modal antes de qualquer aceite.
-- [ ] Abrir ou cancelar o modal não cria participação; apenas “Aceitar convite” envia a operação.
-- [ ] Aceitar convite válido abre o roteiro; repetir o aceite de um link válido não duplica a pessoa.
-- [ ] Convite indisponível e erro de rede permanecem no modal com mensagem e ações de recuperação, sem acesso indevido.
-- [ ] X, Escape, clique fora e “Agora não” retornam às viagens; durante o envio, ficam bloqueados.
-- [ ] Na visão do organizador, os três pontos ficam ao lado do nome e substituem o botão abaixo dele.
-- [ ] O menu só aparece para participantes removíveis e mostra “Remover participante”.
-- [ ] Selecionar a opção abre uma confirmação identificando a pessoa; cancelar preserva participação e votos.
-- [ ] Confirmar remove a pessoa correta, atualiza contagem e votos e mantém seus passeios.
-- [ ] Erros de remoção não fecham a confirmação nem removem a linha indevidamente.
-- [ ] Participantes comuns não removem terceiros; o organizador não pode remover a si mesmo, inclusive por chamadas diretas.
-- [ ] Menus e modais funcionam por teclado, com retorno de foco após cancelar, remover ou atualizar a lista.
-- [ ] Nome comprido, nomes iguais e tela estreita não quebram o layout nem trocam o alvo da remoção.
+Os itens marcados foram verificados localmente pelos métodos abaixo; a conferência no domínio publicado permanece pendente.
+
+- [x] Acessar um convite autenticado abre o modal automaticamente, inclusive por acesso direto e recarregamento.
+- [x] Sem sessão, o login/cadastro preserva o convite e retorna ao modal antes de qualquer aceite.
+- [x] Abrir ou cancelar o modal não cria participação; apenas “Aceitar convite” envia a operação.
+- [x] Aceitar convite válido abre o roteiro; repetir o aceite de um link válido não duplica a pessoa.
+- [x] Convite indisponível e erro de rede permanecem no modal com mensagem e ações de recuperação, sem acesso indevido.
+- [x] X, Escape, clique fora e “Agora não” retornam às viagens; durante o envio, ficam bloqueados.
+- [x] Na visão do organizador, os três pontos ficam ao lado do nome e substituem o botão abaixo dele.
+- [x] O menu só aparece para participantes removíveis e mostra “Remover participante”.
+- [x] Selecionar a opção abre uma confirmação identificando a pessoa; cancelar preserva participação e votos.
+- [x] Confirmar remove a pessoa correta, atualiza contagem e votos e mantém seus passeios.
+- [x] Erros de remoção não fecham a confirmação nem removem a linha indevidamente.
+- [x] Participantes comuns não removem terceiros; o organizador não pode remover a si mesmo, inclusive por chamadas diretas.
+- [x] Menus e modais funcionam por teclado, com retorno de foco após cancelar, remover ou atualizar a lista.
+- [x] Nome comprido, nomes iguais e tela estreita não quebram o layout nem trocam o alvo da remoção.
 
 ## Validação
 
-Validar o escopo antes da implementação e registrar o ambiente e o resultado de cada teste.
+Validação local em 2026-11-03, no WSL Ubuntu com Node 24. Os testes de interface usam Chromium desktop e celular emulado, com autenticação e GraphQL simulados. Os testes de banco aplicam as migrações em PGlite isolado.
 
 | Cenário | Método e ambiente | Resultado |
 | --- | --- | --- |
-| Link direto, login, cadastro e retorno ao convite | Playwright com autenticação simulada; confirmação de e-mail em homologação real | Não executado |
-| Aceite explícito, cancelamento, expiração, erro e repetição | Playwright e regressão dos testes existentes de convite | Não executado |
-| Menu, confirmação, atualização de participantes e votos | Playwright desktop e celular | Não executado |
-| Permissões e remoção por identificador | Regressão da API/banco e teste com nomes iguais | Não executado |
-| Foco, teclado, erros e requisições pendentes | Playwright e histórias no Storybook | Não executado |
-| Layout com nomes longos e tela estreita | Capturas e revisão visual | Não executado |
-| Qualidade e compatibilidade | Lint, TypeScript, testes e builds do app e Storybook | Não executado |
-| Convite e revogação de acesso com duas contas | Supabase e domínio publicado | Não executado |
+| Link direto, login, cadastro e retorno ao convite | Playwright com autenticação simulada | Aprovado; destino enviado no cadastro e preservado no login. Confirmação por e-mail real pendente |
+| Aceite explícito, cancelamento, expiração, erro e repetição | Playwright e regressão dos testes existentes de convite | Aprovado; idempotência também verificada no banco |
+| Menu, confirmação, atualização de participantes e votos | Playwright desktop e celular | Aprovado |
+| Permissões e remoção por identificador | 17 testes de banco e teste de interface com nomes iguais | Aprovado; remoção de terceiros e saída do organizador bloqueadas no banco |
+| Foco, teclado, erros e requisições pendentes | Playwright; estados documentados no Storybook | Aprovado; inclui linha removida durante a confirmação |
+| Layout com nomes longos e tela estreita | Capturas de desktop e celular, revisão visual e teste de largura | Aprovado em emulação; aparelho físico pendente |
+| Qualidade e compatibilidade | Lint, TypeScript, 52 testes Jest e builds do app e Storybook | Aprovado; Storybook mantém avisos de empacotamento de dependências com `use client`, sem erro de build |
+| Convite e revogação de acesso com duas contas | Supabase e domínio publicado | Pendente após publicação |
+
+E2E: 59 cenários aprovados e 1 ignorado por ser exclusivo de desktop. A execução completa teve duas falhas no novo teste de cadastro, que preenchia o formulário antes da navegação terminar. Após aguardar a URL de login, os 16 cenários de autenticação e participantes passaram novamente nos dois tamanhos de tela.
 
 ## Publicação e compatibilidade
 
@@ -138,6 +142,8 @@ Os links existentes continuam funcionando no mesmo endereço. Não é necessári
 
 ## Entrega
 
-- Código da aplicação: não alterado nesta etapa.
+- Código da aplicação: modal de convite, menu de participantes e confirmação de remoção implementados.
+- Storybook: histórias de convite, envio, erro, remoção e nome comprido adicionadas.
+- Commits: `6ec3daf` (modal de convite) e `c499b0f` (menu e confirmação de remoção).
 - Publicação: não realizada para esta spec.
-- Próximo passo: validar o escopo e os critérios de aceite.
+- Próximo passo: publicar e validar convite, confirmação de e-mail e revogação de acesso com duas contas no domínio real.
