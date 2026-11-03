@@ -60,10 +60,10 @@ test("mostra convite expirado e permite voltar", async ({ page }) => {
   await mockApi(page);
   await page.goto("/convites/dddddddd-dddd-4ddd-8ddd-dddddddddddd");
   await page.getByRole("button", { name: "Aceitar convite" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toHaveText(
+  await expect(page.getByRole("dialog").getByRole("alert")).toHaveText(
     "Convite inválido ou expirado.",
   );
-  await page.getByRole("link", { name: "Voltar às viagens" }).click();
+  await page.getByRole("button", { name: "Agora não" }).click();
   await expect(page).toHaveURL("/viagens");
 });
 

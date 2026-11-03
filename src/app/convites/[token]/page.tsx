@@ -11,7 +11,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   return (
     <ProtectedShell next={"/convites/" + token}>
       <main className="mx-auto max-w-lg space-y-6 px-6 py-16">
-        <h1 className="text-3xl font-semibold">Vamos viajar juntos?</h1>
+        <h1 className="text-3xl font-semibold">Convite de viagem</h1>
         <AcceptInvite token={token} />
         <Link href="/viagens" className="inline-block text-sm underline underline-offset-4">
           Voltar às viagens
