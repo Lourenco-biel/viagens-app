@@ -80,6 +80,23 @@ test("only valid invites create membership, and acceptance is idempotent", async
   assert.equal(changed.rows.length, 0);
 });
 
+test("members cannot remove other participants through direct database calls", async () => {
+  await actor(outsider);
+  await db.query("select public.accept_trip_invite($1)", [token]);
+  await actor(guest);
+  const removed = await db.query(
+    "delete from public.trip_members where trip_id=$1 and user_id=$2 returning *",
+    [tripId, outsider],
+  );
+  assert.equal(removed.rows.length, 0);
+  assert.equal((await db.query("select * from public.trip_members")).rows.length, 3);
+  await actor(owner);
+  await db.query("delete from public.trip_members where trip_id=$1 and user_id=$2", [
+    tripId,
+    outsider,
+  ]);
+});
+
 test("members propose within the trip period and outsiders cannot read the itinerary", async () => {
   await actor(guest);
   await assert.rejects(
@@ -153,6 +170,10 @@ test("removing a member revokes access and removes their votes", async () => {
     guest,
   ]);
   assert.equal((await db.query("select * from public.activity_votes")).rows.length, 0);
+  const preserved = await db.query("select created_by from public.activities where id=$1", [
+    activityId,
+  ]);
+  assert.equal(preserved.rows[0].created_by, guest);
   await actor(guest);
   assert.equal((await db.query("select * from public.trips")).rows.length, 0);
 });
