@@ -2,14 +2,14 @@
 
 - Status: Em validação
 - Criada em: 2026-10-29
-- Atualizada em: 2026-10-29
+- Atualizada em: 2026-11-03
 - Revisão do escopo: concluída em 2026-10-29
 - Validação da entrega: testes locais realizados; homologação no Supabase remoto pendente
 - Implementação: concluída localmente, ainda não publicada
 
-## O que quero fazer
+## Objetivo
 
-Quero permitir a edição de um passeio direto no roteiro, sem precisar excluir e cadastrar de novo. Para esta primeira versão, defini estas regras:
+O passeio deve permitir edição no roteiro, sem exclusão e novo cadastro, preservando seu identificador e autoria.
 
 | Decisão | Regra | Consequência |
 | --- | --- | --- |
@@ -18,12 +18,6 @@ Quero permitir a edição de um passeio direto no roteiro, sem precisar excluir 
 | Passeio confirmado | Quando editado, volta automaticamente para “Em votação” | Sai do total de custos confirmados e precisa de nova confirmação do organizador |
 
 Salvar sem modificar os dados mantém os votos e o status. O escopo está fechado e a implementação local está disponível para validação.
-
-## Problema e objetivo
-
-Hoje, para corrigir uma sugestão, preciso removê-la e cadastrar outra. Quero eliminar esse retrabalho para ajustes de horário, endereço e custo, mantendo o mesmo passeio e sua autoria.
-
-Exemplo: o grupo sugeriu uma visita ao museu às 14h, mas o horário correto é 15h. Quem tiver permissão poderá abrir “Editar passeio”, ajustar o horário e salvar. O passeio mantém seu identificador e autoria; os votos serão reiniciados conforme as regras abaixo.
 
 ## Escopo
 
@@ -100,7 +94,7 @@ Esses limites já existem na criação e devem ser compartilhados com a edição
 6. Em sucesso, fechar o formulário e mostrar “Passeio atualizado. A votação foi reiniciada.” Reposicionar o card se o dia ou horário mudou e atualizar o resumo de custos.
 7. Em erro de campo, exibir a mensagem junto ao campo; em falha de conexão, manter o formulário e permitir nova tentativa. Ao cancelar com alterações locais, pedir confirmação de descarte.
 
-Vou reaproveitar `ActivityForm` para criação e edição, com valores iniciais e textos adequados a cada modo. Na criação, os campos continuam sendo limpos após sucesso; na edição, o formulário fecha. O card fica em `ActivityCard`, com a apresentação e as ações do passeio, enquanto `Itinerary` organiza o roteiro. Os nomes das props e os detalhes internos ficam para a implementação.
+`ActivityForm` deve atender criação e edição, com valores iniciais e textos por modo. Após sucesso, a criação limpa os campos e a edição fecha o formulário. `ActivityCard` apresenta o passeio e suas ações; `Itinerary` organiza o roteiro.
 
 Manter os componentes shadcn, estilos e comportamento responsivo existentes. Inputs precisam de labels, erros associados por `aria-describedby` e navegação por teclado. Ao abrir, levar o foco ao primeiro campo; ao fechar, devolver ao botão de edição do card, inclusive se ele mudar de posição. Anunciar sucesso com `role="status"`.
 
@@ -176,14 +170,11 @@ Não requer serviço pago, novas variáveis de ambiente ou mudança no SMTP. Em 
 
 ## Decisões e motivos
 
-- Vou manter a edição de qualquer passeio com o organizador. O autor pode ajustar a própria sugestão enquanto estiver em votação, seguindo a divisão de permissões que o roteiro já usa.
-- Decidi zerar os votos em qualquer mudança efetiva. Mesmo uma correção de texto vai exigir novos votos; prefiro uma regra previsível a tentar adivinhar quais mudanças afetam a decisão do grupo.
+- Qualquer mudança efetiva zera os votos, inclusive correções de texto. A regra evita critérios subjetivos sobre quais alterações afetam a decisão do grupo.
 - Um passeio confirmado volta à votação quando for editado. Assim, o roteiro e o total de custos confirmados só voltam a incluí-lo depois de uma nova confirmação do organizador.
 - O formulário fica dentro do card para manter o contexto do roteiro e evitar uma nova página só para essa edição.
 
-Não há decisões de produto em aberto. Os critérios de aceite permanecem como checklist para minha validação final; os resultados automatizados estão registrados na tabela acima.
-
-Se eu mudar alguma dessas regras, preciso atualizar os critérios de aceite e os impactos técnicos junto com a decisão.
+Não há decisões de produto em aberto. A validação final permanece pendente; os resultados automatizados estão registrados acima. Mudanças nas regras exigem atualização dos critérios de aceite e dos impactos técnicos.
 
 ## Entrega
 

@@ -1,6 +1,6 @@
 # Especificações de alterações
 
-Uso esta pasta para organizar as próximas alterações do projeto antes de começar a desenvolver. Cada spec registra o problema que quero resolver, as regras e o que preciso testar para considerar a entrega pronta.
+Esta pasta reúne as especificações das alterações do projeto. Cada spec define objetivo, escopo, regras e critérios de aceite antes da implementação.
 
 As regras atuais estão em [MVP](../mvp.md), e os resultados dos testes em [Validação do MVP](../validacao-mvp.md). Os arquivos `.spec.ts` em `e2e/` são testes automatizados, não especificações de produto.
 
@@ -31,10 +31,13 @@ O status de cada spec indica se a proposta está em discussão, pronta para dese
 | [002 — Navegação e modais de passeios](002-navegacao-e-modais-de-passeios.md) | Separar o retorno do cabeçalho, tornar os cards clicáveis e usar modal para sugerir e editar passeios | Em validação |
 | [003 — Modal de convite e menu de participantes](003-modal-de-convite-e-menu-de-participantes.md) | Aceitar convites em modal e acessar a remoção pelo menu ao lado do participante | Rascunho |
 
-IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP. Vou definir o escopo de cada uma quando entrar no planejamento.
+IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP e exigem specs próprias antes da implementação.
 
 ## Escrita
 
-As specs são documentos do projeto. Uso primeira pessoa para explicar objetivos e escolhas, e regras diretas para descrever o comportamento da aplicação. Evito relatos da conversa, aprovações em terceira pessoa e formalidades que não ajudam a implementar ou validar a mudança.
-
-Mantenho separados o que decidi fazer, o que já foi implementado e o que realmente testei. Sou responsável por revisar as decisões e validar a entrega.
+- Descrever diretamente o comportamento esperado: “O aceite deve aparecer em modal”, “Somente o organizador pode remover participantes”.
+- Evitar primeira pessoa, intenções pessoais e relatos da conversa.
+- Manter o objetivo curto. Detalhar regras, fluxos e exceções nas seções correspondentes.
+- Incluir contexto e justificativas apenas quando ajudarem a entender uma decisão. Evitar repetir requisitos em uma seção de decisões.
+- Usar critérios de aceite observáveis e verificáveis.
+- Separar requisitos, implementação e evidências de testes. Não apresentar uma proposta como entregue ou validada.

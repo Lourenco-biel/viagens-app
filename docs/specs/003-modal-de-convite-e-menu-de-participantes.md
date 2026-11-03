@@ -6,11 +6,10 @@
 - Validação do escopo: pendente
 - Implementação: não iniciada
 
-## Problema e objetivo
+## Objetivo
 
-Quero que o aceite do convite apareça em um modal quando a pessoa acessar o link. Hoje, essa ação fica diretamente na página de convite.
-
-Também quero limpar a lista de participantes para quem organiza a viagem. Em vez de mostrar “Remover participante” abaixo de cada nome, vou colocar um menu de três pontos ao lado do nome, com essa opção dentro dele.
+- O aceite do convite deve aparecer em um modal ao acessar o link com a sessão autenticada. Sem sessão, o modal deve abrir após o login.
+- Na visão do organizador, a lista de participantes deve exibir um menu de três pontos ao lado de cada participante removível, com a opção “Remover participante”, substituindo o botão abaixo do nome.
 
 ## Escopo
 
@@ -120,7 +119,7 @@ Cancelar a confirmação não altera os dados e devolve o foco ao botão de trê
 
 ## Validação
 
-Vou validar a proposta antes de implementar. Depois, registrar os resultados com o ambiente usado.
+Validar o escopo antes da implementação e registrar o ambiente e o resultado de cada teste.
 
 | Cenário | Método e ambiente | Resultado |
 | --- | --- | --- |
@@ -136,14 +135,6 @@ Vou validar a proposta antes de implementar. Depois, registrar os resultados com
 ## Publicação e compatibilidade
 
 Os links existentes continuam funcionando no mesmo endereço. Não é necessária nova migração ou configuração de serviços. Depois dos testes, publicar o código e conferir convite e remoção com duas contas. O retorno ao deploy anterior não exige mudança no banco.
-
-## Decisões
-
-- Vou manter o login antes do aceite e abrir o modal automaticamente ao retornar ao convite.
-- O aceite continua explícito; abrir o link não significa entrar na viagem.
-- Vou mover a remoção para um menu e confirmar em diálogo para manter a lista organizada.
-- Vou preservar as permissões e os efeitos atuais da remoção.
-- Falta revisar esta proposta antes de iniciar o desenvolvimento.
 
 ## Entrega
 

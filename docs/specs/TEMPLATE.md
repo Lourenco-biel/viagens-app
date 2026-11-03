@@ -5,11 +5,11 @@
 - Atualizada em: AAAA-MM-DD
 - Validação: Pendente
 
-## Problema e objetivo
+## Objetivo
 
-Hoje, [situação atual e dificuldade]. Quero [resultado esperado] para que [benefício para quem usa].
+[Comportamento esperado, descrito diretamente: “O sistema deve...”, “A página deve...” ou “O participante pode...”.]
 
-Exemplo: [como funciona hoje e como deve funcionar depois].
+[Contexto atual, somente se necessário para explicar a alteração.]
 
 ## Escopo
 
@@ -49,7 +49,7 @@ Exemplo: [como funciona hoje e como deve funcionar depois].
 
 ## Validação
 
-Vou validar os cenários abaixo. Para cada um, registrar o ambiente usado e o resultado obtido, distinguindo testes simulados de testes com os serviços reais.
+Registrar o ambiente e o resultado de cada teste. Distinguir simulação de validação com serviços reais.
 
 | Cenário | Método e ambiente | Resultado / evidência |
 | --- | --- | --- |
@@ -61,10 +61,10 @@ Vou validar os cenários abaixo. Para cada um, registrar o ambiente usado e o re
 - Configurações necessárias, sem credenciais: a definir.
 - Como voltar à versão anterior, se necessário: a definir.
 
-## Decisões
+## Decisões (se necessário)
 
-- Escolha: [o que decidi e por quê].
-- Em aberto: [o que ainda preciso resolver antes de implementar].
+- Escolha e motivo: [decisão relevante que não esteja descrita nas regras].
+- Em aberto: [questão pendente para implementação].
 
 ## Entrega
 

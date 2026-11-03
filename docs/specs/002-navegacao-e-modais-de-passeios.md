@@ -6,11 +6,11 @@
 - Validação do escopo: concluída
 - Implementação: concluída localmente; publicação e homologação pendentes
 
-## Problema e objetivo
+## Objetivo
 
-Quero deixar a navegação mais clara e o roteiro menos carregado. Hoje, o link de voltar fica visualmente próximo demais do cabeçalho, só o nome da viagem é clicável no card e os formulários de passeios ocupam espaço no próprio roteiro.
-
-Vou separar melhor o controle de voltar, permitir entrar pela área inteira do card e usar um modal para sugerir e editar passeios. Criar e editar a viagem continuam em páginas próprias, porque são fluxos com mais espaço para crescer.
+- O retorno deve usar uma seta em uma faixa separada dos cabeçalhos.
+- Toda a área do card deve permitir entrar na viagem.
+- A criação e a edição de passeios devem ocorrer em modal. A criação e a edição de viagens devem permanecer em páginas próprias.
 
 ## Escopo
 
@@ -118,7 +118,7 @@ Os itens marcados foram verificados localmente por testes automatizados e revis�
 
 ## Validação
 
-Validei os fluxos localmente com respostas GraphQL simuladas e revisei as capturas de desktop e celular emulado. A validação no domínio publicado e em aparelho real continua pendente.
+Fluxos validados localmente com GraphQL simulado e revisão de capturas em desktop e celular emulado. A homologação no domínio publicado e em aparelho real está pendente.
 
 | Cenário | Método e ambiente | Resultado / evidência |
 | --- | --- | --- |
@@ -140,14 +140,6 @@ Após o ajuste final do espaçamento, os cinco cenários aplicáveis de navegaç
 A edição da spec 001 e sua migração precisam estar disponíveis no ambiente de destino. Esta alteração não precisa de migração adicional, novo serviço ou configuração de SMTP.
 
 Depois dos testes, publicar o frontend e validar os fluxos no domínio do app. Se necessário, voltar ao deploy anterior sem alterar os dados. Atualizar a documentação da interface quando esta spec for entregue.
-
-## Decisões
-
-- Quero a seta em uma faixa própria para separar navegação e conteúdo.
-- Quero que o card inteiro funcione como entrada para a viagem, com uma ação visível no rodapé.
-- Vou usar modal para passeios porque é uma ação pontual dentro do roteiro. A viagem mantém suas páginas de criação e edição.
-- Vou manter as regras da edição atual e mudar apenas sua apresentação.
-- Escopo aprovado para implementação. Medidas de espaçamento e largura são referências para conferir visualmente na entrega.
 
 ## Entrega
 
