@@ -6,11 +6,13 @@ As regras atuais estão em [MVP](../mvp.md), e os resultados dos testes em [Vali
 
 ## Como usar
 
-1. Copie [TEMPLATE.md](TEMPLATE.md) para `NNN-nome-da-alteracao.md`, usando o próximo número disponível, a partir de `001`.
-2. Preencha o problema, o escopo, as regras e os critérios de aceite antes de implementar. Para mudanças pequenas, mantenha a descrição curta; marque seções sem impacto como “Não se aplica”.
-3. Registre dúvidas e decisões pendentes. Uma ideia documentada não significa que já foi aprovada para desenvolvimento.
-4. Atualize o índice abaixo e o status conforme o trabalho avançar.
-5. Na entrega, registre testes e commits. Atualize também `docs/mvp.md` se as regras vigentes mudarem.
+1. Para as próximas alterações, seguir o [fluxo do Spec Kit](../spec-kit.md), começando pela spec 004 em `specs/` na raiz do repositório.
+2. Definir objetivo, escopo, regras e critérios de aceite antes de implementar, com escrita curta e objetiva.
+3. Registrar dúvidas e decisões pendentes. Uma ideia documentada não significa que já foi aprovada para desenvolvimento.
+4. Atualizar o índice abaixo com o link da nova spec e o status conforme o trabalho avançar.
+5. Na entrega, registrar testes e commits. Atualizar também `docs/mvp.md` se as regras vigentes mudarem.
+
+As specs 001–003 e [TEMPLATE.md](TEMPLATE.md) ficam preservados como histórico do processo anterior.
 
 ## Status
 

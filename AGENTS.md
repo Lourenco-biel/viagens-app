@@ -1,3 +1,12 @@
+# Desenvolvimento com Spec Kit
+
+- Consultar `.specify/memory/constitution.md` antes de especificar, planejar ou implementar.
+- Manter specs em português, objetivas e impessoais. Gabriel valida o escopo antes da implementação.
+- Usar as skills em `.agents/skills/speckit-*` e executar os scripts Bash no WSL, na raiz do projeto.
+- Preservar as specs 001–003 em `docs/specs/`. Criar as próximas em `specs/`, começando por 004; considerar o histórico ao escolher a numeração e atualizar o índice em `docs/specs/README.md`.
+- Não editar as skills ou templates gerados para personalizar o processo; usar a constituição e, se necessário, overrides locais suportados pelo Spec Kit.
+- Configuração e comandos: `docs/spec-kit.md`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
