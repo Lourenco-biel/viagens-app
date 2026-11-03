@@ -8,7 +8,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   return (
-    <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:px-6">
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6">
       <BackLink href={"/viagens/" + id} label="Voltar ao roteiro" />
       <h1 className="text-3xl font-semibold">Editar viagem</h1>
       <EditTrip id={id} />

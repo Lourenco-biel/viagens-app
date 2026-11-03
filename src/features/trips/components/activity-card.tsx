@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/confirm-button";
 import type { Activity } from "../model/activity";
@@ -16,7 +15,6 @@ export function ActivityCard({
   onVote,
   onConfirm,
   onRemove,
-  children,
 }: {
   activity: Activity;
   isOwner: boolean;
@@ -26,7 +24,6 @@ export function ActivityCard({
   onVote: () => Promise<void>;
   onConfirm: () => Promise<void>;
   onRemove: () => Promise<void>;
-  children?: ReactNode;
 }) {
   const canManage = isOwner || (a.createdBy === viewerId && a.status === "proposed");
   return (
@@ -82,7 +79,6 @@ export function ActivityCard({
           </>
         )}
       </div>
-      {children}
     </article>
   );
 }

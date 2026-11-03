@@ -10,12 +10,15 @@ test("busca e filtros permanecem na URL", async ({ page }) => {
   await page.getByRole("link", { name: "Concluídas", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Nenhuma viagem encontrada" })).toBeVisible();
   await page.getByRole("link", { name: "Limpar filtros" }).click();
-  await expect(page.getByRole("link", { name: initialTrip.name, exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Entrar na viagem: " + initialTrip.name, exact: true }),
+  ).toBeVisible();
 });
 
 test("sugere, vota e confirma um passeio", async ({ page }, testInfo) => {
   await mockApi(page);
   await page.goto("/viagens/" + tripId);
+  await page.getByRole("button", { name: "Sugerir passeio" }).click();
   const form = page.getByRole("form", { name: "Sugerir passeio" });
   await form.getByLabel("Nome do passeio").fill("Jardim Botânico");
   await form.getByLabel("Dia", { exact: true }).fill("2026-12-11");
@@ -78,5 +81,7 @@ test("falha de rede mostra recuperação", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
   await mockApi(page);
   await page.getByRole("button", { name: "Tentar novamente" }).click();
-  await expect(page.getByRole("link", { name: initialTrip.name, exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Entrar na viagem: " + initialTrip.name, exact: true }),
+  ).toBeVisible();
 });

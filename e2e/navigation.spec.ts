@@ -32,6 +32,10 @@ test("retorno funciona sem histórico nas páginas de detalhes, criação e edi�
     const back = page.getByRole("link", { name: label, exact: true });
     await expect(back).toHaveAttribute("href", destination);
     await expect(back).toHaveCSS("height", "44px");
+    await expect(page.getByRole("main")).toHaveCSS(
+      "row-gap",
+      path.endsWith("/nova") || path.endsWith("/editar") ? "32px" : "24px",
+    );
     await back.focus();
     await expect(back.getByText(label)).toHaveCSS("opacity", "1");
     await back.press("Enter");

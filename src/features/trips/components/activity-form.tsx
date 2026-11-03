@@ -9,6 +9,17 @@ import { errorMessage } from "@/lib/graphql/error-message";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { sameActivityValues } from "../lib/activity-values";
 
+function readValues(form: HTMLFormElement): ActivityInput {
+  const data = new FormData(form);
+  return {
+    title: String(data.get("title") ?? ""),
+    day: String(data.get("day") ?? ""),
+    startTime: String(data.get("startTime") ?? "") || null,
+    location: String(data.get("location") ?? ""),
+    estimatedCost: data.get("estimatedCost") === "" ? NaN : Number(data.get("estimatedCost")),
+  };
+}
+
 export function ActivityForm({
   startDate,
   endDate,
@@ -17,6 +28,8 @@ export function ActivityForm({
   confirmSave,
   onCancelAction,
   onReloadAction,
+  onDirtyChange,
+  onPendingChange,
 }: {
   startDate: string;
   endDate: string;
@@ -25,11 +38,22 @@ export function ActivityForm({
   confirmSave?: () => boolean;
   onCancelAction?: () => void;
   onReloadAction?: () => Promise<void>;
+  onDirtyChange?: (dirty: boolean) => void;
+  onPendingChange?: (pending: boolean) => void;
 }) {
   const id = useId();
   const [initial] = useState(initialValues);
   const editing = Boolean(initial);
-  const [dirty, setDirty] = useState(false);
+  const [defaults] = useState<ActivityInput>(
+    () =>
+      initialValues ?? {
+        title: "",
+        day: startDate,
+        startTime: null,
+        location: "",
+        estimatedCost: 0,
+      },
+  );
   const [conflict, setConflict] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof ActivityInput, string[]>>>({});
   const [error, setError] = useState("");
@@ -48,19 +72,17 @@ export function ActivityForm({
     },
   ] as const;
 
+  function updatePending(value: boolean) {
+    setPending(value);
+    onPendingChange?.(value);
+  }
+
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const data = new FormData(form);
     setSaved(false);
     setError("");
-    const result = activitySchema.safeParse({
-      title: data.get("title"),
-      day: data.get("day"),
-      startTime: data.get("startTime") || null,
-      location: data.get("location") || "",
-      estimatedCost: data.get("estimatedCost") === "" ? NaN : Number(data.get("estimatedCost")),
-    });
+    const result = activitySchema.safeParse(readValues(form));
     if (!result.success) {
       setErrors(z.flattenError(result.error).fieldErrors);
       return;
@@ -72,11 +94,11 @@ export function ActivityForm({
     setErrors({});
     if (initial && !sameActivityValues(initial, result.data) && confirmSave && !confirmSave())
       return;
-    setPending(true);
+    updatePending(true);
     try {
       await onSaveAction(result.data);
       if (!editing) form.reset();
-      setDirty(false);
+      onDirtyChange?.(false);
       setSaved(true);
     } catch (error) {
       setError(errorMessage(error));
@@ -88,14 +110,16 @@ export function ActivityForm({
           setErrors(fields as Partial<Record<keyof ActivityInput, string[]>>);
       }
     } finally {
-      setPending(false);
+      updatePending(false);
     }
   }
 
   return (
     <form
       onSubmit={submit}
-      onChange={() => setDirty(true)}
+      onChange={(event) =>
+        onDirtyChange?.(!sameActivityValues(defaults, readValues(event.currentTarget)))
+      }
       noValidate
       aria-label={editing ? "Editar passeio" : "Sugerir passeio"}
       className="space-y-4"
@@ -112,7 +136,7 @@ export function ActivityForm({
               type={field.type}
               required={field.required}
               disabled={pending}
-              autoFocus={editing && field.name === "title"}
+              autoFocus={field.name === "title"}
               defaultValue={
                 initial
                   ? (initial[field.name] ?? "")
@@ -151,45 +175,39 @@ export function ActivityForm({
       )}
       {saved && (
         <p role="status" className="text-sm text-primary">
-          Passeio adicionado às sugestões.
+          {editing ? "Passeio atualizado." : "Passeio adicionado às sugestões."}
         </p>
       )}
-      {conflict && onReloadAction && (
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pending}
-          onClick={async () => {
-            if (!window.confirm("Descartar suas alterações e carregar a versão atual?")) return;
-            setPending(true);
-            try {
-              await onReloadAction();
-            } catch (error) {
-              setError(errorMessage(error));
-            } finally {
-              setPending(false);
-            }
-          }}
-        >
-          Carregar versão atual
+      <div className="flex flex-wrap gap-2 pt-2">
+        {conflict && onReloadAction && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pending}
+            onClick={async () => {
+              if (!window.confirm("Descartar suas alterações e carregar a versão atual?")) return;
+              updatePending(true);
+              try {
+                await onReloadAction();
+              } catch (error) {
+                setError(errorMessage(error));
+              } finally {
+                updatePending(false);
+              }
+            }}
+          >
+            Carregar versão atual
+          </Button>
+        )}
+        <Button type="submit" disabled={pending}>
+          {pending ? "Salvando..." : editing ? "Salvar alterações" : "Adicionar sugestão"}
         </Button>
-      )}
-      <Button type="submit" disabled={pending}>
-        {pending ? "Salvando..." : editing ? "Salvar alterações" : "Adicionar sugestão"}
-      </Button>
-      {onCancelAction && (
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pending}
-          onClick={() => {
-            if (!dirty || window.confirm("Descartar as alterações deste passeio?"))
-              onCancelAction();
-          }}
-        >
-          Cancelar edição
-        </Button>
-      )}
+        {onCancelAction && (
+          <Button type="button" variant="outline" disabled={pending} onClick={onCancelAction}>
+            Cancelar
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

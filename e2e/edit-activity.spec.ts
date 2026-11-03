@@ -16,6 +16,42 @@ const suggestion: Activity = {
   version: 1,
 };
 
+test("passeio removido não apaga o rascunho e o fechamento retorna para sugerir", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await mockApi(page, [{ ...initialTrip, activities: [{ ...suggestion, votes: 0 }] }]);
+  await page.goto("/viagens/" + tripId);
+  await page.getByRole("button", { name: "Editar passeio" }).click();
+  const modal = page.getByRole("dialog", { name: "Editar passeio", exact: true });
+  await modal.getByLabel("Nome do passeio").fill("Meu rascunho");
+  await mockApi(page, [{ ...initialTrip, activities: [] }]);
+  await page.route("**/api/graphql", async (route) => {
+    if (route.request().postDataJSON().operationName === "UpdateActivity") {
+      await route.fulfill({
+        json: {
+          errors: [
+            {
+              message: "Passeio não encontrado ou sem acesso.",
+              extensions: { code: "NOT_FOUND" },
+            },
+          ],
+        },
+      });
+    } else await route.fallback();
+  });
+  await page.clock.fastForward(31000);
+  await expect(
+    page.getByRole("button", { name: "Editar passeio", includeHidden: true }),
+  ).toHaveCount(0);
+  await modal.getByRole("button", { name: "Salvar alterações" }).click();
+  await expect(modal.getByRole("alert")).toContainText("sem acesso");
+  await expect(modal.getByLabel("Nome do passeio")).toHaveValue("Meu rascunho");
+  page.once("dialog", (dialog) => dialog.accept());
+  await modal.getByRole("button", { name: "Cancelar", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Sugerir passeio" })).toBeFocused();
+});
+
 test("edita confirmado, reinicia votos e atualiza dia, custo e foco", async ({
   page,
 }, testInfo) => {
@@ -62,7 +98,7 @@ test("não altera votos em salvamento sem mudanças e permite cancelar correçõ
   await page.getByRole("button", { name: "Editar passeio" }).click();
   await form.getByLabel("Nome do passeio").fill("Descartar alteração");
   page.once("dialog", (dialog) => dialog.accept());
-  await form.getByRole("button", { name: "Cancelar edição" }).click();
+  await form.getByRole("button", { name: "Cancelar", exact: true }).click();
   await expect(page.getByRole("heading", { name: suggestion.title })).toBeVisible();
   await expect(page.getByRole("button", { name: "Editar passeio" })).toBeFocused();
 });
@@ -177,7 +213,9 @@ test("polling atualiza o card sem substituir o texto em edição", async ({ page
     },
   ]);
   await page.clock.fastForward(31000);
-  await expect(page.getByRole("heading", { name: "Atualizado pelo grupo" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Atualizado pelo grupo", includeHidden: true }),
+  ).toBeVisible();
   await expect(form.getByLabel("Nome do passeio")).toHaveValue("Rascunho local");
   page.once("dialog", (dialog) => dialog.accept());
   await form.getByRole("button", { name: "Salvar alterações" }).click();

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function NewTripPage() {
   return (
-    <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:px-6">
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6">
       <BackLink href="/viagens" label="Voltar para suas viagens" />
 
       <header className="space-y-2">

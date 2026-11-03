@@ -1,7 +1,10 @@
 "use client";
 
-import { Fragment, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useState } from "react";
 import { useApolloClient, useMutation } from "@apollo/client/react";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/feedback";
 import {
   ADD_ACTIVITY,
@@ -13,7 +16,7 @@ import {
 } from "../graphql/documents";
 import type { TripDetail } from "../model/trip-detail";
 import type { Activity } from "../model/activity";
-import { ActivityForm } from "./activity-form";
+import { ActivityDialog } from "./activity-dialog";
 import { ActivityCard } from "./activity-card";
 import { formatTripDate } from "../lib/format-trip-date";
 import { sameActivityValues } from "../lib/activity-values";
@@ -28,20 +31,12 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
   const [confirm] = useMutation(SET_ACTIVITY_STATUS);
   const [vote] = useMutation(VOTE_ACTIVITY);
   const [update] = useMutation(UPDATE_ACTIVITY);
-  const [editing, setEditing] = useState<Activity | null>(null);
-  const focusAfterClose = useRef<string | null>(null);
-  useLayoutEffect(() => {
-    if (!editing && focusAfterClose.current) {
-      document.getElementById("edit-activity-" + focusAfterClose.current)?.focus();
-      focusAfterClose.current = null;
-    }
-  }, [editing]);
+  const [editor, setEditor] = useState<{ activity?: Activity } | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const activities = [...trip.activities];
-  if (editing && !activities.some((a) => a.id === editing.id)) activities.push(editing);
-  activities.sort(
+  const editing = editor?.activity;
+  const activities = [...trip.activities].sort(
     (a, b) =>
       a.day.localeCompare(b.day) ||
       (a.startTime ?? "99:99").localeCompare(b.startTime ?? "99:99") ||
@@ -63,14 +58,15 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
     }
   }
 
-  function closeEditor(id: string) {
-    focusAfterClose.current = id;
-    setEditing(null);
+  function openEditor(activity?: Activity) {
+    setEditor({ activity: activity && { ...activity } });
+    setMessage("");
+    setError("");
   }
 
   return (
     <section aria-labelledby="roteiro-heading" className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 id="roteiro-heading" className="text-2xl font-semibold">
             Roteiro
@@ -79,10 +75,18 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
             Vote nas sugestões. O organizador confirma o que entra no roteiro.
           </p>
         </div>
-        <div className="rounded-xl bg-muted px-4 py-3">
-          <p className="text-xs text-muted-foreground">Passeios confirmados · por pessoa</p>
-          <p className="font-semibold">{money.format(total)}</p>
-        </div>
+        <Button
+          id="suggest-activity"
+          className="min-h-11"
+          disabled={pending || Boolean(editor)}
+          onClick={() => openEditor()}
+        >
+          <Plus aria-hidden="true" /> Sugerir passeio
+        </Button>
+      </div>
+      <div className="w-fit rounded-xl bg-muted px-4 py-3">
+        <p className="text-xs text-muted-foreground">Passeios confirmados · por pessoa</p>
+        <p className="font-semibold">{money.format(total)}</p>
       </div>
       {error && <ErrorState message={error} />}
       {message && (
@@ -92,7 +96,7 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
       )}
       {!activities.length && (
         <p className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-          O roteiro começa com uma ideia. Sugira o primeiro passeio abaixo.
+          O roteiro começa com uma ideia. Use “Sugerir passeio” para adicionar a primeira.
         </p>
       )}
       {activities.map((a, index) => (
@@ -106,77 +110,62 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
             activity={a}
             isOwner={trip.isOwner}
             viewerId={viewerId}
-            disabled={pending || Boolean(editing)}
-            onEdit={() => {
-              setEditing({ ...a });
-              setMessage("");
-              setError("");
-            }}
+            disabled={pending || Boolean(editor)}
+            onEdit={() => openEditor(a)}
             onVote={() => run(() => vote({ variables: { id: a.id, voted: !a.votedByMe } }))}
             onConfirm={() =>
               run(() => confirm({ variables: { id: a.id, confirmed: a.status !== "confirmed" } }))
             }
             onRemove={() => run(() => remove({ variables: { id: a.id } }))}
-          >
-            {editing?.id === a.id && (
-              <div className="space-y-4 border-t pt-4">
-                <p className="text-sm text-muted-foreground">
-                  Ao alterar este passeio, os votos serão zerados.
-                  {a.status === "confirmed" &&
-                    " Ele voltará para votação e sairá do total de custos confirmados."}
-                </p>
-                <ActivityForm
-                  key={editing.id + ":" + editing.version}
-                  initialValues={editing}
-                  startDate={trip.startDate}
-                  endDate={trip.endDate}
-                  confirmSave={() =>
-                    !(a.votes > 0 || a.status === "confirmed") ||
-                    window.confirm(
-                      "Salvar as alterações e zerar os votos deste passeio?" +
-                        (a.status === "confirmed"
-                          ? " Ele voltará para votação e sairá do total de custos confirmados."
-                          : ""),
-                    )
-                  }
-                  onCancelAction={() => closeEditor(a.id)}
-                  onReloadAction={async () => {
-                    const result = await client.query({
-                      query: TRIP,
-                      variables: { id: trip.id },
-                      fetchPolicy: "network-only",
-                    });
-                    const current = result.data?.trip.activities.find((item) => item.id === a.id);
-                    if (!current) throw new Error("Passeio indisponível");
-                    setEditing({ ...current });
-                  }}
-                  onSaveAction={async (input) => {
-                    await update({
-                      variables: { id: a.id, input, expectedVersion: editing.version },
-                    });
-                    setMessage(
-                      sameActivityValues(editing, input)
-                        ? "Nenhuma alteração para salvar."
-                        : "Passeio atualizado. A votação foi reiniciada.",
-                    );
-                    closeEditor(a.id);
-                  }}
-                />
-              </div>
-            )}
-          </ActivityCard>
+          />
         </Fragment>
       ))}
-      <div className="space-y-4 rounded-xl border bg-card p-5">
-        <h3 className="text-lg font-semibold">Sugerir passeio</h3>
-        <ActivityForm
+      {editor && (
+        <ActivityDialog
+          activity={editing}
+          currentActivity={trip.activities.find((a) => a.id === editing?.id)}
           startDate={trip.startDate}
           endDate={trip.endDate}
+          onCloseAction={() => setEditor(null)}
+          onReloadAction={
+            editing &&
+            (async () => {
+              const result = await client.query({
+                query: TRIP,
+                variables: { id: trip.id },
+                fetchPolicy: "network-only",
+              });
+              const current = result.data?.trip.activities.find((a) => a.id === editing.id);
+              if (!current)
+                throw new CombinedGraphQLErrors({
+                  errors: [
+                    {
+                      message: "Passeio não encontrado ou sem acesso.",
+                      extensions: { code: "NOT_FOUND" },
+                    },
+                  ],
+                });
+              setEditor({ activity: { ...current } });
+            })
+          }
           onSaveAction={async (input) => {
-            await add({ variables: { tripId: trip.id, input } });
+            if (editing) {
+              await update({
+                variables: { id: editing.id, input, expectedVersion: editing.version },
+              });
+              setMessage(
+                sameActivityValues(editing, input)
+                  ? "Nenhuma alteração para salvar."
+                  : "Passeio atualizado. A votação foi reiniciada.",
+              );
+            } else {
+              await add({ variables: { tripId: trip.id, input } });
+              setMessage("Passeio adicionado às sugestões.");
+            }
+            setEditor(null);
           }}
         />
-      </div>
+      )}
       <p className="text-xs text-muted-foreground">
         Os custos são estimativas informadas pelo grupo, em reais. Não incluem hospedagem,
         transporte ou reservas.
