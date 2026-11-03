@@ -93,6 +93,8 @@ Após o deploy, valide edição, reinício dos votos e permissões com duas cont
 
 Especificações ficam em [docs/specs](docs/specs/README.md), com um arquivo por alteração. Use o [modelo](docs/specs/TEMPLATE.md) para definir escopo, regras, impactos técnicos e critérios de aceite antes de implementar. Documentar uma proposta não amplia automaticamente o escopo do MVP.
 
+A [spec 002](docs/specs/002-navegacao-e-modais-de-passeios.md) implementa os cards clicáveis, a seta de retorno e os modais de criação/edição de passeios. Está em validação local e não exige nova migração além da edição de passeios da spec 001.
+
 ## Organização
 
 ```text

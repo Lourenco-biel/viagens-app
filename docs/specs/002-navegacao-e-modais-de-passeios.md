@@ -1,10 +1,10 @@
 # 002 — Navegação e modais de passeios
 
-- Status: Rascunho
+- Status: Em validação
 - Criada em: 2026-10-29
-- Atualizada em: 2026-10-29
-- Validação do escopo: pendente
-- Implementação: não iniciada
+- Atualizada em: 2026-11-03
+- Validação do escopo: concluída
+- Implementação: concluída localmente; publicação e homologação pendentes
 
 ## Problema e objetivo
 
@@ -100,34 +100,40 @@ Esta proposta substitui apenas a decisão de apresentar o editor dentro do card.
 
 ## Critérios de aceite
 
-- [ ] As três páginas usam a seta de retorno, com destino correto, nome acessível, foco visível e espaçamento separado dos cabeçalhos.
-- [ ] Abrir uma página diretamente e usar a seta leva ao destino definido, mesmo sem histórico anterior no app.
-- [ ] Qualquer área do card abre a viagem; o card mostra cursor de clique e “Entrar na viagem”.
-- [ ] Cada card tem um único link acessível, funciona por teclado e permite abrir em nova aba.
-- [ ] “Sugerir passeio” abre um modal; o formulário não fica mais no fim da página.
-- [ ] “Editar passeio” abre o modal preenchido; nenhum editor é expandido dentro do card.
-- [ ] Criação e edição de viagens continuam em páginas próprias.
-- [ ] Cancelar, fechar, Escape e clique no fundo respeitam a confirmação de descarte e o bloqueio durante envio.
-- [ ] Salvar atualiza a página e fecha o modal; falha de validação, rede ou conflito mantém os valores para correção.
-- [ ] Avisos, permissões, reinício de votos, reabertura e salvamento sem mudanças continuam seguindo a spec 001.
-- [ ] Polling não apaga o rascunho; apenas a recarga explícita substitui os campos após conflito.
-- [ ] Foco fica dentro do modal e retorna ao controle correto ao fechar, inclusive após mudança de dia ou remoção do passeio.
+Os itens marcados foram verificados localmente por testes automatizados e revisão da interface. A homologação no domínio publicado permanece pendente.
+
+- [x] As três páginas usam a seta de retorno, com destino correto, nome acessível, foco visível e espaçamento separado dos cabeçalhos.
+- [x] Abrir uma página diretamente e usar a seta leva ao destino definido, mesmo sem histórico anterior no app.
+- [x] Qualquer área do card abre a viagem; o card mostra cursor de clique e “Entrar na viagem”.
+- [x] Cada card tem um único link acessível, funciona por teclado e permite abrir em nova aba.
+- [x] “Sugerir passeio” abre um modal; o formulário não fica mais no fim da página.
+- [x] “Editar passeio” abre o modal preenchido; nenhum editor é expandido dentro do card.
+- [x] Criação e edição de viagens continuam em páginas próprias.
+- [x] Cancelar, fechar, Escape e clique no fundo respeitam a confirmação de descarte e o bloqueio durante envio.
+- [x] Salvar atualiza a página e fecha o modal; falha de validação, rede ou conflito mantém os valores para correção.
+- [x] Avisos, permissões, reinício de votos, reabertura e salvamento sem mudanças continuam seguindo a spec 001.
+- [x] Polling não apaga o rascunho; apenas a recarga explícita substitui os campos após conflito.
+- [x] Foco fica dentro do modal e retorna ao controle correto ao fechar, inclusive após mudança de dia ou remoção do passeio.
 - [ ] No celular, os campos e as ações são alcançáveis, sem rolagem horizontal, inclusive com o teclado aberto.
 
 ## Validação
 
-Vou revisar primeiro esta proposta. Depois da implementação, registrar os resultados abaixo sem confundir respostas simuladas com testes no ambiente publicado.
+Validei os fluxos localmente com respostas GraphQL simuladas e revisei as capturas de desktop e celular emulado. A validação no domínio publicado e em aparelho real continua pendente.
 
 | Cenário | Método e ambiente | Resultado / evidência |
 | --- | --- | --- |
-| Card inteiro, retorno e abertura em nova aba | Playwright desktop e celular | Não executado |
-| Criar, editar, cancelar, salvar e manter dados após erro | Adaptar os cenários existentes do Playwright para o modal | Não executado |
-| Conflito, polling, permissões, votos e confirmação | Regressão da spec 001 e testes automatizados existentes | Não executado |
-| Tab, Shift+Tab, Escape, foco e bloqueio durante envio | Playwright e revisão manual de acessibilidade | Não executado |
-| Card e modal nos modos criação, edição, erro e conflito | Storybook e revisão visual | Não executado |
-| Espaçamento do retorno e celular com teclado aberto | Revisão visual no navegador e em um celular real | Não executado |
-| Qualidade e compatibilidade | Lint, TypeScript, testes e builds do app e Storybook | Não executado |
+| Card inteiro, retorno e abertura em nova aba | Playwright desktop e celular | Passou; nova aba verificada apenas no desktop |
+| Criar, editar, cancelar, salvar e manter dados após erro | Playwright com GraphQL simulado | Passou |
+| Conflito, polling, permissões, votos e confirmação | Regressão da spec 001 no Playwright | Passou, incluindo passeio removido enquanto o modal está aberto |
+| Tab, Shift+Tab, Escape, foco e bloqueio durante envio | Playwright | Passou; inclui ciclo de foco, quatro formas de cancelamento e descarte dispensado ao restaurar os valores iniciais |
+| Card e modal nos modos criação, edição, erro e conflito | Storybook e revisão visual | Histórias adicionadas; capturas do fluxo real revisadas em desktop e celular emulado |
+| Espaçamento do retorno e celular com teclado aberto | Capturas e viewport reduzido a 390 × 400 no Playwright | Layout e salvamento passaram na emulação; teclado virtual em aparelho real pendente |
+| Qualidade e compatibilidade | Lint, TypeScript, testes e builds do app e Storybook | Passou em 03/11/2026; Storybook mantém avisos de dependências sobre `use client` e tamanho dos bundles |
 | Fluxo publicado com duas contas | Supabase e Vercel, usando dados de teste | Não executado |
+
+Em 03/11/2026, a regressão completa do Playwright teve 45 testes aprovados e um ignorado: abertura em nova aba usa mouse de desktop e não é repetida na emulação de celular. Os 52 testes Jest também passaram. Não houve alteração de API, banco, dependências ou regras de autorização nesta spec.
+
+Após o ajuste final do espaçamento, os cinco cenários aplicáveis de navegação passaram novamente, e o build do app e a checagem de tipos foram concluídos. As histórias do modal cobrem criação, edição, passeio confirmado, erro de rede e conflito.
 
 ## Publicação e compatibilidade
 
@@ -141,10 +147,11 @@ Depois dos testes, publicar o frontend e validar os fluxos no domínio do app. S
 - Quero que o card inteiro funcione como entrada para a viagem, com uma ação visível no rodapé.
 - Vou usar modal para passeios porque é uma ação pontual dentro do roteiro. A viagem mantém suas páginas de criação e edição.
 - Vou manter as regras da edição atual e mudar apenas sua apresentação.
-- Falta revisar esta proposta antes de iniciar a implementação. Medidas de espaçamento e largura são referências para conferir visualmente na entrega.
+- Escopo aprovado para implementação. Medidas de espaçamento e largura são referências para conferir visualmente na entrega.
 
 ## Entrega
 
-- Código da aplicação: não alterado nesta etapa.
+- Código da aplicação: implementado localmente.
+- Commits: `f7875e7` (retorno e cards) e `913c77f` (modais, espaçamento final e testes).
 - Publicação: não realizada para esta spec.
-- Próximo passo: validar o escopo e os critérios de aceite.
+- Próximo passo: publicar os commits e conferir o fluxo no domínio do app, incluindo celular real.
