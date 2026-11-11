@@ -21,10 +21,17 @@ import { ActivityCard } from "./activity-card";
 import { formatTripDate } from "../lib/format-trip-date";
 import { sameActivityValues } from "../lib/activity-values";
 import { errorMessage } from "@/lib/graphql/error-message";
+import { TripBudget } from "./trip-budget";
 
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-
-export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: string }) {
+export function Itinerary({
+  trip,
+  viewerId,
+  refreshError,
+}: {
+  trip: TripDetail;
+  viewerId: string;
+  refreshError?: string;
+}) {
   const client = useApolloClient();
   const [add] = useMutation(ADD_ACTIVITY);
   const [remove] = useMutation(DELETE_ACTIVITY);
@@ -42,9 +49,6 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
       (a.startTime ?? "99:99").localeCompare(b.startTime ?? "99:99") ||
       a.id.localeCompare(b.id),
   );
-  const total = trip.activities
-    .filter((a) => a.status === "confirmed")
-    .reduce((sum, a) => sum + a.estimatedCost, 0);
 
   async function run(action: () => Promise<unknown>) {
     setPending(true);
@@ -84,10 +88,7 @@ export function Itinerary({ trip, viewerId }: { trip: TripDetail; viewerId: stri
           <Plus aria-hidden="true" /> Sugerir passeio
         </Button>
       </div>
-      <div className="w-fit rounded-xl bg-muted px-4 py-3">
-        <p className="text-xs text-muted-foreground">Passeios confirmados · por pessoa</p>
-        <p className="font-semibold">{money.format(total)}</p>
-      </div>
+      <TripBudget trip={trip} refreshError={refreshError} />
       {error && <ErrorState message={error} />}
       {message && (
         <p role="status" className="text-sm text-primary">

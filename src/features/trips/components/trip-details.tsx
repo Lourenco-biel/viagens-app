@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client/react";
+import { CombinedGraphQLErrors, ServerError } from "@apollo/client/errors";
 import { TRIP, DELETE_TRIP } from "../graphql/documents";
 import { ErrorState, LoadingState } from "@/components/feedback";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,13 +17,36 @@ import { TripMembers } from "./trip-members";
 export function TripDetails({ id }: { id: string }) {
   const router = useRouter();
   const [closing, setClosing] = useState(false);
-  const { data, loading, error, refetch } = useQuery(TRIP, {
+  const { data, previousData, loading, error, refetch } = useQuery(TRIP, {
     variables: { id },
     pollInterval: 30000,
     skip: closing,
   });
   const [remove, { loading: removing }] = useMutation(DELETE_TRIP);
   const [actionError, setActionError] = useState("");
+  const [blockedRead, setBlockedRead] = useState<{ id: string; message: string } | null>(null);
+  const currentData = data ?? (previousData?.trip.id === id ? previousData : undefined);
+  const transientError =
+    error &&
+    (CombinedGraphQLErrors.is(error)
+      ? error.errors.every((item) => item.extensions?.code === "OPERATION_FAILED")
+      : ServerError.is(error)
+        ? error.statusCode >= 500
+        : error instanceof TypeError);
+  const blockingMessage = error && !transientError ? errorMessage(error) : undefined;
+  const freshData = !loading && !error && data?.trip.id === id;
+  // Uma falha de rede posterior não pode reexibir dados cujo acesso foi negado.
+  if (blockingMessage && (blockedRead?.id !== id || blockedRead.message !== blockingMessage))
+    setBlockedRead({ id, message: blockingMessage });
+  if (blockedRead && freshData) setBlockedRead(null);
+  const refreshError =
+    error && transientError && currentData
+      ? "Não foi possível atualizar a viagem. Os últimos dados confirmados foram mantidos."
+      : undefined;
+
+  function retry() {
+    void refetch().catch(() => undefined);
+  }
 
   async function deleteTrip() {
     setActionError("");
@@ -43,21 +67,16 @@ export function TripDetails({ id }: { id: string }) {
     }
   }
   if (closing) return <LoadingState label="Excluindo viagem..." />;
-  if (error)
-    return (
-      <ErrorState
-        message={errorMessage(error)}
-        retry={() => {
-          void refetch();
-        }}
-      />
-    );
-  if (loading && !data) return <LoadingState label="Carregando a viagem..." />;
-  if (!data) return null;
-  const { trip, viewerId } = data;
+  if (blockedRead?.id === id && !freshData)
+    return <ErrorState message={blockedRead.message} retry={retry} />;
+  if (error && !refreshError) return <ErrorState message={errorMessage(error)} retry={retry} />;
+  if (loading && !currentData) return <LoadingState label="Carregando a viagem..." />;
+  if (!currentData) return null;
+  const { trip, viewerId } = currentData;
 
   return (
     <div className="space-y-8">
+      {refreshError && <ErrorState message={refreshError} retry={retry} />}
       <header className="space-y-4 rounded-2xl border bg-card p-6 sm:p-8">
         <p className="text-sm font-medium text-primary">
           {trip.status === "upcoming"
@@ -90,7 +109,7 @@ export function TripDetails({ id }: { id: string }) {
         {actionError && <ErrorState message={actionError} />}
       </header>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <Itinerary trip={trip} viewerId={viewerId} />
+        <Itinerary trip={trip} viewerId={viewerId} refreshError={refreshError} />
         <TripMembers trip={trip} viewerId={viewerId} />
       </div>
     </div>
