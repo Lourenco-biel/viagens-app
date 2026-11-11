@@ -11,9 +11,8 @@ const inter = Inter({
 const preview: Preview = {
   decorators: [
     (Story) => (
-      <div
-        className={`${inter.variable} ${inter.className} antialiased`}
-      >
+      <div className={`${inter.variable} ${inter.className} antialiased`}>
+        <style>{`html { --font-inter: ${inter.style.fontFamily}; }`}</style>
         <Story />
       </div>
     ),
