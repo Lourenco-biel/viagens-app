@@ -63,6 +63,12 @@ DATABASE_TEST_URL=postgresql://USUARIO:SENHA@127.0.0.1:5432/viagens_activity_tes
 
 O teste aplica todas as migrações e usa conexões independentes. Não use o projeto Supabase real para esse comando. Para repetir, recrie apenas esse banco de teste; o script recusa um banco já preenchido. A CI prepara um PostgreSQL temporário para essa verificação. `PSQL_PATH` permite informar outro caminho para o executável.
 
+## Orçamento estimado por pessoa
+
+A [spec 004](specs/004-orcamento-estimado/spec.md) adiciona orçamento opcional e comparação com os passeios confirmados. Aplicar `supabase/migrations/202611060001_trip_budget.sql` após as migrações existentes e antes de publicar o código novo. A migração acrescenta uma coluna anulável e sua validação; viagens existentes continuam sem orçamento. Não reaplicar migrações históricas.
+
+Em reversão da aplicação, preservar a coluna e os orçamentos salvos: o código anterior é compatível com a coluna adicional. Apagá-la descartaria os dados e exige uma decisão separada. A [validação da spec 004](specs/004-orcamento-estimado/quickstart.md) registra testes locais e o roteiro de homologação Supabase, incluindo transporte decimal textual, permissões e duas contas. A implementação local não indica publicação nem aplicação da migração no projeto remoto.
+
 ## Storybook
 
 ```bash

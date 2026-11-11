@@ -8,6 +8,7 @@
 - Participação individual ou em grupo por convite.
 - Sugestões de passeios por dia, horário, endereço e custo estimado.
 - Votos por passeio e confirmação pelo organizador.
+- Orçamento opcional por pessoa, comparado ao custo dos passeios confirmados.
 - Visual responsivo e componentes documentados no Storybook.
 
 IA, chat, fotos, reservas, mapas e integrações com empresas ficam fora desta versão.
@@ -34,11 +35,21 @@ Qualquer participante pode sugerir passeios dentro do período da viagem. O hor�
 
 A decisão final é do organizador: ele confirma ou reabre a votação. A contagem não decide automaticamente; não há desempate automático. A confirmação mantém os votos, mas impede novos votos e retiradas.
 
-O organizador pode remover qualquer passeio. O autor pode remover sua própria sugestão enquanto ela ainda estiver em votação. Para corrigir os dados de uma sugestão, esta versão permite removê-la e cadastrar outra; os votos anteriores não são transferidos.
+O organizador pode editar ou remover qualquer passeio. O autor pode editar ou remover sua própria sugestão enquanto ela ainda estiver em votação. Uma edição efetiva zera votos e reabre o passeio; uma edição equivalente preserva votos e confirmação, conforme a [spec 001](specs/001-edicao-de-passeios.md).
 
 Custos são informados pelo usuário, em reais, por pessoa, com duas casas decimais. O resumo soma apenas passeios confirmados. Não é cotação comercial, orçamento completo nem rateio de despesas.
 
 O roteiro consulta atualizações a cada 30 segundos enquanto aberto. Não há chat ou sincronização em tempo real nesta versão.
+
+## Orçamento estimado
+
+Cada viagem admite um orçamento opcional em reais por pessoa, referente somente a passeios. Somente o organizador pode definir, editar e remover o valor; participantes podem consultar. São aceitos zero e valores positivos com até duas casas decimais. Ausência é diferente de zero; viagens existentes permanecem sem orçamento até uma definição explícita.
+
+O resumo mostra orçamento, total dos passeios confirmados e valor restante, limite atingido ou aviso com o valor excedido. Passeios em votação não entram na soma. A quantidade de participantes não altera os valores. Exceder o orçamento não bloqueia sugestões, votos ou confirmações. Alterações locais e consultas periódicas atualizam a comparação conforme os dados recebidos.
+
+Definição e edição usam modal, com cancelamento, validação, envio e recuperação de falhas preservando o preenchimento. Remover exige confirmação e preserva passeios, custos e votos. Sem orçamento, o total continua visível, sem saldo ou excesso. Hospedagem, alimentação, transporte, despesas reais, pagamentos, rateio e conversão de moedas ficam fora deste orçamento.
+
+Implementação descrita na [spec 004](../specs/004-orcamento-estimado/spec.md); homologação manual com Supabase real relatada como concluída por Gabriel em 2026-11-11, com [origem e limites das evidências](../specs/004-orcamento-estimado/quickstart.md). A publicação dessa funcionalidade não foi verificada nesta etapa de revisão e versionamento.
 
 ## Arquitetura e estado
 

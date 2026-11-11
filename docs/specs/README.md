@@ -32,6 +32,7 @@ O status de cada spec indica se a proposta está em discussão, pronta para dese
 | [001 — Edição de passeios](001-edicao-de-passeios.md) | Corrigir dados de um passeio sem excluí-lo, com regras explícitas para permissões, votos e confirmação | Em validação |
 | [002 — Navegação e modais de passeios](002-navegacao-e-modais-de-passeios.md) | Separar o retorno do cabeçalho, tornar os cards clicáveis e usar modal para sugerir e editar passeios | Em validação |
 | [003 — Modal de convite e menu de participantes](003-modal-de-convite-e-menu-de-participantes.md) | Aceitar convites em modal e acessar a remoção pelo menu ao lado do participante | Em validação |
+| [004 — Orçamento estimado da viagem](../../specs/004-orcamento-estimado/spec.md) · [Plano](../../specs/004-orcamento-estimado/plan.md) · [Tarefas](../../specs/004-orcamento-estimado/tasks.md) | Definir orçamento por pessoa e compará-lo com o custo dos passeios confirmados | Concluída — implementação e testes locais concluídos; homologação manual Supabase relatada por Gabriel em 2026-11-11 ([evidências e limites](../../specs/004-orcamento-estimado/quickstart.md)); implementação versionada, envio autorizado; nenhum deploy manual executado nesta etapa |
 
 IA, chat, fotos e integrações com reservas e locadoras continuam fora do MVP e exigem specs próprias antes da implementação.
 
