@@ -6,6 +6,7 @@ type Table<Row, Insert> = {
 };
 
 export type TripRow = {
+  budget_per_person: number | null;
   id: string;
   owner_id: string;
   name: string;
@@ -41,7 +42,11 @@ export type Database = {
     Tables: {
       trips: Table<
         TripRow,
-        Omit<TripRow, "id" | "created_at"> & { id?: string; created_at?: string }
+        Omit<TripRow, "id" | "created_at" | "budget_per_person"> & {
+          id?: string;
+          created_at?: string;
+          budget_per_person?: string | null;
+        }
       >;
       trip_members: Table<MemberRow, Omit<MemberRow, "created_at"> & { created_at?: string }>;
       activities: Table<

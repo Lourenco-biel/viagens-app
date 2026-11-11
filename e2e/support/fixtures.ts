@@ -5,6 +5,7 @@ import type { TripDetail } from "../../src/features/trips/model/trip-detail";
 export const tripId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 export const inviteToken = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 export const initialTrip: TripDetail = {
+  budgetPerPerson: null,
   id: tripId,
   name: "Férias em Curitiba",
   destination: "Curitiba, PR",
@@ -56,6 +57,23 @@ export async function mockApi(page: Page, initial: TripDetail[] = [structuredClo
       case "UpdateTrip":
         Object.assign(trip, v.input);
         data = { updateTrip: trip };
+        break;
+      case "SetTripBudget":
+        if (!trip.isOwner) {
+          await route.fulfill({
+            json: {
+              errors: [
+                {
+                  message: "Somente o organizador pode alterar o orçamento.",
+                  extensions: { code: "FORBIDDEN" },
+                },
+              ],
+            },
+          });
+          return;
+        }
+        trip.budgetPerPerson = v.input.budgetPerPerson;
+        data = { setTripBudget: trip };
         break;
       case "DeleteTrip":
         trips = trips.filter((t) => t.id !== v.id);
@@ -154,6 +172,7 @@ export async function mockApi(page: Page, initial: TripDetail[] = [structuredClo
     };
     await route.fulfill({ json: { data: addTypes(data) } });
   });
+  return { trips };
 }
 
 export const test = base.extend<{ signedIn: void }>({

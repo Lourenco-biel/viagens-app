@@ -3,6 +3,7 @@ import type { TripSummary, TripFilters } from "../model/trip";
 import type { TripDetail } from "../model/trip-detail";
 import type { CreateTripInput } from "../model/create-trip";
 import type { ActivityInput } from "../model/activity";
+import type { TripBudgetInput } from "../model/trip-budget";
 
 const summary = gql`
   fragment TripSummaryFields on Trip {
@@ -19,6 +20,7 @@ const summary = gql`
 const detail = gql`
   fragment TripDetailFields on Trip {
     ...TripSummaryFields
+    budgetPerPerson
     members {
       userId
       displayName
@@ -91,6 +93,17 @@ export const DELETE_TRIP: TypedDocumentNode<{ deleteTrip: boolean }, { id: strin
   mutation DeleteTrip($id: ID!) {
     deleteTrip(id: $id)
   }
+`;
+export const SET_TRIP_BUDGET: TypedDocumentNode<
+  { setTripBudget: TripDetail },
+  { id: string; input: TripBudgetInput }
+> = gql`
+  mutation SetTripBudget($id: ID!, $input: TripBudgetInput!) {
+    setTripBudget(id: $id, input: $input) {
+      ...TripDetailFields
+    }
+  }
+  ${detail}
 `;
 export const ADD_ACTIVITY: TypedDocumentNode<
   { addActivity: TripDetail },

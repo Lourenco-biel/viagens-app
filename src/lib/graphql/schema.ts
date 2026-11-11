@@ -18,7 +18,7 @@ export const schema = createSchema<GraphQLContext>({
     type Trip {
       id: ID!, name: String!, destination: String!, startDate: String!, endDate: String!,
       participantCount: Int!, status: TripStatus!, isOwner: Boolean!,
-      members: [Member!]!, activities: [Activity!]!
+      members: [Member!]!, activities: [Activity!]!, budgetPerPerson: String
     }
     type Member { userId: ID!, displayName: String!, isOwner: Boolean! }
     type Activity {
@@ -29,6 +29,7 @@ export const schema = createSchema<GraphQLContext>({
     type Invite { token: String!, expiresAt: String! }
     input TripFilters { query: String, status: String, offset: Int, limit: Int }
     input TripInput { name: String!, destination: String!, startDate: String!, endDate: String! }
+    input TripBudgetInput { budgetPerPerson: String }
     input ActivityInput { title: String!, day: String!, startTime: String, location: String!, estimatedCost: Float! }
     type Query {
       viewerId: ID!
@@ -38,6 +39,7 @@ export const schema = createSchema<GraphQLContext>({
     type Mutation {
       createTrip(input: TripInput!): Trip!
       updateTrip(id: ID!, input: TripInput!): Trip!
+      setTripBudget(id: ID!, input: TripBudgetInput!): Trip!
       deleteTrip(id: ID!): Boolean!
       addActivity(tripId: ID!, input: ActivityInput!): Trip!
       updateActivity(id: ID!, input: ActivityInput!, expectedVersion: Int!): Trip!
@@ -56,6 +58,10 @@ export const schema = createSchema<GraphQLContext>({
       trip: (_, { id }, ctx) => trips.tripDetail(authenticated(ctx), id),
     },
     Trip: {
+      budgetPerPerson: (parent, _, ctx) =>
+        parent.budgetPerPerson !== undefined
+          ? parent.budgetPerPerson
+          : trips.tripDetail(authenticated(ctx), parent.id).then((t) => t.budgetPerPerson),
       members: (parent, _, ctx) =>
         parent.members ?? trips.tripDetail(authenticated(ctx), parent.id).then((t) => t.members),
       activities: (parent, _, ctx) =>
@@ -65,6 +71,7 @@ export const schema = createSchema<GraphQLContext>({
     Mutation: {
       createTrip: (_, { input }, ctx) => trips.saveTrip(authenticated(ctx), input),
       updateTrip: (_, { id, input }, ctx) => trips.saveTrip(authenticated(ctx), input, id),
+      setTripBudget: (_, { id, input }, ctx) => trips.setTripBudget(authenticated(ctx), id, input),
       deleteTrip: (_, { id }, ctx) => trips.deleteTrip(authenticated(ctx), id),
       addActivity: (_, { tripId, input }, ctx) =>
         trips.addActivity(authenticated(ctx), tripId, input),

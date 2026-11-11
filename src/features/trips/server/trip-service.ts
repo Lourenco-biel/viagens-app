@@ -4,6 +4,7 @@ import type { GraphQLContext } from "@/lib/graphql/context";
 import type { TripRow, ActivityRow } from "@/lib/supabase/database.types";
 import { createTripSchema } from "../model/create-trip-schema";
 import { activitySchema } from "../model/activity";
+import { normalizeBudget, tripBudgetSchema } from "../model/trip-budget";
 import { getTripStatus } from "../lib/trip-status";
 import { normalizeText } from "../lib/trip-filters";
 
@@ -49,7 +50,11 @@ function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   return result.data;
 }
 
-export function tripSummary(row: TripRow, count: number, userId: string) {
+export function tripSummary(
+  row: Pick<TripRow, "id" | "owner_id" | "name" | "destination" | "start_date" | "end_date">,
+  count: number,
+  userId: string,
+) {
   return {
     id: row.id,
     name: row.name,
@@ -64,10 +69,14 @@ export function tripSummary(row: TripRow, count: number, userId: string) {
 
 export async function requireTrip(ctx: GraphQLContext, id: string) {
   parse(z.uuid(), id);
-  const { data, error } = await ctx.db.from("trips").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await ctx.db
+    .from("trips")
+    .select("id,owner_id,name,destination,start_date,end_date,created_at,budget_per_person::text")
+    .eq("id", id)
+    .maybeSingle();
   check(error, "Não foi possível carregar a viagem.");
   if (!data) fail("Viagem não encontrada ou sem acesso.", "NOT_FOUND");
-  return data;
+  return data as Omit<TripRow, "budget_per_person"> & { budget_per_person: string | null };
 }
 
 async function requireOwner(ctx: GraphQLContext, id: string) {
@@ -171,6 +180,8 @@ export async function tripDetail(ctx: GraphQLContext, id: string) {
   }
   return {
     ...tripSummary(trip, members!.length, ctx.userId),
+    budgetPerPerson:
+      trip.budget_per_person == null ? null : normalizeBudget(trip.budget_per_person),
     members: members!.map((m) => ({
       userId: m.user_id,
       displayName: m.display_name,
@@ -190,6 +201,36 @@ export async function tripDetail(ctx: GraphQLContext, id: string) {
       votedByMe: votes!.some((v) => v.activity_id === a.id && v.user_id === ctx.userId),
     })),
   };
+}
+
+export async function setTripBudget(ctx: GraphQLContext, id: string, input: unknown) {
+  const values = parse(tripBudgetSchema, input);
+  await requireOwner(ctx, id);
+  const { data, error } = await ctx.db
+    .from("trips")
+    .update({ budget_per_person: values.budgetPerPerson })
+    .eq("id", id)
+    .select("id")
+    .single();
+  if (error) {
+    if (error.code === "42501")
+      fail("Somente o organizador pode alterar o orçamento.", "FORBIDDEN");
+    if (error.code === "PGRST116") fail("Viagem não encontrada ou sem acesso.", "NOT_FOUND");
+    if (["23514", "22003", "22P02"].includes(error.code)) {
+      throw new GraphQLError(
+        "Não foi possível salvar este orçamento. Verifique o valor informado.",
+        {
+          extensions: {
+            code: "BAD_USER_INPUT",
+            fieldErrors: { budgetPerPerson: ["Verifique o valor informado."] },
+          },
+        },
+      );
+    }
+    fail("Não foi possível salvar o orçamento. Tente novamente.", "OPERATION_FAILED");
+  }
+  if (!data) fail("Viagem não encontrada ou sem acesso.", "NOT_FOUND");
+  return tripDetail(ctx, data.id);
 }
 
 export async function saveTrip(ctx: GraphQLContext, input: unknown, id?: string) {
